@@ -1,0 +1,54 @@
+Login / Register / Enter as a guest
+    Login:
+    - Take User Credentials (username, password)
+    - Load User Content
+    - Go to Home Page
+
+    Register:
+    - Create username, password
+    - Go to Home Page
+
+    Guest:
+    - Go to Home Page directly
+
+Home Page:
+    Only options are printed
+1- View Playlists (go to Library)
+2- Download new track (go to Downloader)
+3- Download new playlist (//)
+4- Logout (go to Login Page)
+
+Library:
+    One Line for each playlist
+1- Open Playlist (go to Playlist Viewer)
+2- Play playlist
+3- Play track
+2- Back
+
+Playlist Viewer:
+    One Line for each track
+1- Play track
+2- back
+
+----------------------------------------
+Classes
+----------------------------------------
+- IPlayable (interface)
+    * Id
+    * Start
+    * StartAt
+    * Pause
+- Track: IPlayable
+    * track name
+    * file location
+- Playlist: IPlayable
+    * playlist name
+    * playlist description
+    * tracks (array of track id)
+- TrackQueue
+    * IPlayable queue
+    => PopNext() => IPlayable
+    => GetNext() => IPlayable
+- Media Player
+    => Glay(IPlayable)
+    => Pause()

@@ -1,0 +1,41 @@
+When user opens Trackey
+
+<Welcome Message>
+User Selection Page
+[
+    Login => callback: User.Login() , condition: (only if at least one user exists in users.json file)
+    Register => callback: User.Register()
+    Enter as a Guest => no callback
+]
+
+After Successfull Login/Register: => Home(User)
+After Successfull Enter as a Guest: => Home(null)
+
+-------------------------
+
+Home (Logged in)
+1. Library => Library Page
+2. Download new track/s => Download Page
+3. Logout => User Selection Page
+
+Home (Guest)
+1. Play Local Track => All Downloads Playlist Page
+2. Download new track/s => Download Page
+3. Login/Register => User Selection Page
+
+-------------------------
+
+Library
+a table view of the current user playlists
+1. View Playlist => Selection over playlists
+2. Play Playlist => Multiselection over playlists
+3. New Playlist => Create Playlist Page
+4. Delete Playlist => Create Playlist Page
+5. Back to Home => Home Page
+
+Playlist View
+a table view of the playlist's tracks
+1. Play Whole Playlist
+2. Select Track/s to play => Multiselection over tracks
+3. Manage Playlist => {rename, add track, remove track ..etc}
+3. Back to Library => Library

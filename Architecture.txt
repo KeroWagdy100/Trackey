@@ -1,0 +1,46 @@
+Application
+    has:
+        one User (or null)
+        one CommandHandler
+        one AudioPlayer
+        one QueueManager
+        one Downloader
+        one LibraryManager
+    
+    main while loop, forwards the input command to the CommandHandler
+
+CommandHandler
+    handles different types of commands:
+        AudioPlayer Commands:
+            - pause
+            - resume
+            - inc/dec volume
+        QueueManager Commands:
+            - start queue (adds playlists/tracks)
+            - skip
+            - add to queue
+            - view queue
+        LibraryManager Commands:
+            - view library (show playlists)
+            - manage playlist
+        UserRelated Commands:
+            - login
+            - register
+            - logout
+        Download Commands:
+            - download track
+            - view downloads
+
+AudioPlayer
+QueueManager
+Downloader
+
+
+MVP - Required:
+1. play local track
+2. queue tracks
+3. skip
+4. pause/resume
+5. playlists
+6. persistent library
+7. basic download
