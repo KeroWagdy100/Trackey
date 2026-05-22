@@ -18,17 +18,15 @@ class AudioPlayer
 
 
     public int Volume => player.Volume;
-    public PlaybackState State()
-    {
-        return player.State switch
+    public PlaybackState State =>
+        player.State switch
         {
             VLCState.Playing => PlaybackState.PLAYING,
             VLCState.Paused => PlaybackState.PAUSED,
             _ => PlaybackState.NONE,
         };
-    }
 
-    public bool IsPlaying => State() == PlaybackState.PLAYING;
+    public bool IsPlaying => State == PlaybackState.PLAYING;
 
     public enum PlaybackState
     {

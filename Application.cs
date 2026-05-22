@@ -1,3 +1,5 @@
+using LibVLCSharp.Shared;
+
 namespace Trackey;
 
 class Application
@@ -24,15 +26,23 @@ class Application
         Lib = new();
     }
 
+    public void Demo()
+    {
+        Track track1 = new() {FileLocation = "./music/file1.mp3", Title = "Khaleek Fakerny", Artist = "Amr Diab"};
+        Track track2 = new() {FileLocation = "./music/file2.mp3", Title = "Khaleek Fakerny", Artist = "Amr Diab"};
+        Lib.AddTrack(track1);
+        Lib.AddTrack(track2);
+
+        Playlist pop = new();
+        pop.AddTrack(track1.Id).AddTrack(track2.Id);
+        Lib.AddPlaylist(pop);
+
+        Queue.AddPlaylist(pop);
+    }
+
     public void Run()
     {
-        Guid track1Id = Lib.CreateTrack("./music/file1.mp3", "Khaleek Fakerny", "Amr Diab");
-        Guid track2Id = Lib.CreateTrack("./music/file2.mp3", "Khaleek Ma3aya", "Amr Diab");
-        Playlist amoora = new Playlist {Title = "Amoora", Tracks = {track1Id, track2Id}};
-        Queue.AddPlaylist(amoora);
-        // Queue.AddTrack(track1Id);
-        // Queue.AddTrack(track2Id);
-
+        Demo();
         if (Queue.HasNext())
             UpdateCurrTrack(Queue.Next());
 
@@ -54,14 +64,11 @@ class Application
 
     public void HandleKey(ConsoleKeyInfo key)
     {
-        if (key.KeyChar == 'Q')
-            Quit();
-        else if (key.KeyChar == '+')
-            Player.IncreaseVolume(5);
-        else if (key.KeyChar == '-')
-            Player.DecreaseVolume(5);
-        else if (key.Key == ConsoleKey.Spacebar)
-            Player.TogglePause();
+        if (key.KeyChar == 'Q')                     Quit();
+        else if (key.KeyChar == '+')                Player.IncreaseVolume(5);
+        else if (key.KeyChar == '-')                Player.DecreaseVolume(5);
+        else if (key.Key == ConsoleKey.Spacebar)    Player.TogglePause();
+
         else if (key.Key == ConsoleKey.RightArrow)
         {
             if (Queue.HasNext())
@@ -82,21 +89,16 @@ class Application
 
     public void Draw()
     {
-        if (!IsPlaying)
+        if (Player.State == AudioPlayer.PlaybackState.NONE)
         {
             Console.WriteLine("Not Playing anything now");
             return;
         }
 
-        string trackName = CurrTrack?.Title ?? "N/A";
-        
-        Console.WriteLine($"Now Playing: {trackName} ({Player.State()})");
-        Console.WriteLine($"Volume: {Player.Volume}");
-    }
+        char stateChar = Player.State == AudioPlayer.PlaybackState.PLAYING ? '⏸' : '►';
 
-    private void MainMenu()
-    {
-        // ! -> 
+        Console.WriteLine($"({stateChar}): {CurrTrack.Title} | {CurrTrack.Artist}");
+        Console.WriteLine($"Volume: {Player.Volume}");
     }
 
     private void Quit() => IsRunning = false;
