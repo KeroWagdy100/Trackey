@@ -5,7 +5,13 @@ class Library
     private Dictionary<Guid, Track> tracks = new();
     private Dictionary<Guid, Playlist> playlists = new();
 
-    public Track? GetTrack(Guid trackId) => tracks[trackId];
+    public bool TryGetTrack(Guid trackId, out Track? track)
+    {
+        if (!tracks.TryGetValue(trackId, out track))
+            return false;
+        return true;
+    }
+
     public Track? UpdateTrack(Guid trackId, Track track)
     {
         if (tracks.ContainsKey(trackId))

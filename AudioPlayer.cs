@@ -17,6 +17,7 @@ class AudioPlayer
     }
 
 
+    
     public int Volume => player.Volume;
     public PlaybackState State =>
         player.State switch
@@ -47,7 +48,7 @@ class AudioPlayer
 
     public void Stop() => player.Stop();
     public void Pause() => player.Pause();
-    public void Resume() => player.Pause();
+    public void Resume() => player.SetPause(false);
     public void TogglePause()
     {
         if (player.IsPlaying) Pause();

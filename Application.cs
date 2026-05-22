@@ -5,6 +5,7 @@ namespace Trackey;
 class Application
 {
     public const int MX_TRIALS = 3; // TODO: REMOVE THIS LATER
+    public const int TARGET_FPS = 30;
 
     public Library Lib { get; }
     public AudioPlayer Player { get; }
@@ -17,7 +18,11 @@ class Application
     public bool IsRunning { get; set; } = true; // if false, app quits
 
 
-    public Track? CurrTrack => CurrTrackId is Guid id ? Lib.GetTrack(id) : null;
+    public Track? CurrTrack() {
+        if (CurrTrackId is Guid id && Lib.TryGetTrack(id, out var track))
+            return track;
+        return null;
+    }
 
     public Application()
     {
@@ -28,8 +33,8 @@ class Application
 
     public void Demo()
     {
-        Track track1 = new() {FileLocation = "./music/file1.mp3", Title = "Khaleek Fakerny", Artist = "Amr Diab"};
-        Track track2 = new() {FileLocation = "./music/file2.mp3", Title = "Khaleek Fakerny", Artist = "Amr Diab"};
+        Track track1 = new() { FileLocation = "./music/file1.mp3", Title = "Khaleek Fakerny", Artist = "Amr Diab" };
+        Track track2 = new() { FileLocation = "./music/file2.mp3", Title = "Khaleek Ma3aya", Artist = "Amr Diab" };
         Lib.AddTrack(track1);
         Lib.AddTrack(track2);
 
@@ -42,8 +47,10 @@ class Application
 
     public void Run()
     {
+        Console.Clear();
+
         Demo();
-        if (Queue.HasNext())
+        if (Queue.CanNavigate)
             UpdateCurrTrack(Queue.Next());
 
         while (IsRunning)
@@ -55,27 +62,28 @@ class Application
                 HandleKey(key);
             }
 
-            Console.Clear();
             Draw();
-            Thread.Sleep(10);
+
+            Thread.Sleep(1000 / TARGET_FPS);
         }
+
         Console.Clear();
     }
 
     public void HandleKey(ConsoleKeyInfo key)
     {
-        if (key.KeyChar == 'Q')                     Quit();
-        else if (key.KeyChar == '+')                Player.IncreaseVolume(5);
-        else if (key.KeyChar == '-')                Player.DecreaseVolume(5);
-        else if (key.Key == ConsoleKey.Spacebar)    Player.TogglePause();
+        if (key.KeyChar == 'Q') Quit();
+        else if (key.KeyChar == '+') Player.IncreaseVolume(5);
+        else if (key.KeyChar == '-') Player.DecreaseVolume(5);
+        else if (key.Key == ConsoleKey.Spacebar) Player.TogglePause();
 
         else if (key.Key == ConsoleKey.RightArrow)
         {
-            if (Queue.HasNext())
+            if (Queue.CanNavigate)
                 UpdateCurrTrack(Queue.Next());
         }
         else if (key.Key == ConsoleKey.LeftArrow)
-            if (Queue.HasPrev())
+            if (Queue.CanNavigate)
                 UpdateCurrTrack(Queue.Prev());
     }
 
@@ -84,11 +92,12 @@ class Application
         // TODO: HANDLE EDGE CASES
         // e.g. Track not initialized in library
         CurrTrackId = trackId;
-        Player.Play(CurrTrack!.FileLocation);
+        Player.Play(CurrTrack()!.FileLocation);
     }
 
     public void Draw()
     {
+        Console.Clear();
         if (Player.State == AudioPlayer.PlaybackState.NONE)
         {
             Console.WriteLine("Not Playing anything now");
@@ -97,7 +106,7 @@ class Application
 
         char stateChar = Player.State == AudioPlayer.PlaybackState.PLAYING ? '⏸' : '►';
 
-        Console.WriteLine($"({stateChar}): {CurrTrack.Title} | {CurrTrack.Artist}");
+        Console.WriteLine($"({stateChar}): {CurrTrack()?.Title} | {CurrTrack()?.Artist}");
         Console.WriteLine($"Volume: {Player.Volume}");
     }
 

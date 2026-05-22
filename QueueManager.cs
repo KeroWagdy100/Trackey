@@ -11,13 +11,13 @@ class QueueManager
     }
 
     public void AddTrack(Guid trackId) => queue.Add(trackId);
-    public void AddPlaylist(Playlist playlist) {
+    public void AddPlaylist(Playlist playlist)
+    {
         foreach (Guid trackId in playlist.Tracks)
             queue.Add(trackId);
     }
 
-    public bool HasNext() => queue.Count != 0;
-    public bool HasPrev() => queue.Count != 0;
+    public bool CanNavigate => queue.Count != 0;
     public Guid Next()
     {
         curr = (curr + 1) % queue.Count;
