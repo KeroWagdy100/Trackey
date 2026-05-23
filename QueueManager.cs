@@ -17,7 +17,7 @@ class QueueManager
             queue.Add(trackId);
     }
 
-    public bool CanNavigate => queue.Count != 0;
+    public bool IsEmpty => queue.Count == 0;
     public Guid Next()
     {
         curr = (curr + 1) % queue.Count;

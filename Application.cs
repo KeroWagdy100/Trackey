@@ -45,7 +45,7 @@ class Application
         Console.Clear();
 
         Demo();
-        if (Queue.CanNavigate)
+        if (!Queue.IsEmpty)
             SetCurrentTrack(Queue.Next());
 
         AnsiConsole.Live(ui.Layout)
@@ -85,12 +85,12 @@ class Application
 
         else if (key.Key == ConsoleKey.RightArrow)
         {
-            if (Queue.CanNavigate)
+            if (!Queue.IsEmpty)
                 SetCurrentTrack(Queue.Next());
         }
         else if (key.Key == ConsoleKey.LeftArrow)
         {
-            if (Queue.CanNavigate)
+            if (!Queue.IsEmpty)
                 SetCurrentTrack(Queue.Prev());
         }
         else
