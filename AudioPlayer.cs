@@ -8,7 +8,7 @@ class AudioPlayer
     private LibVLC libvlc;
     private MediaPlayer player;
     private Media? currentMedia;
-    
+
     public AudioPlayer()
     {
         Core.Initialize();
@@ -17,19 +17,19 @@ class AudioPlayer
     }
 
 
-    
+
     public int Volume => player.Volume;
-    public PlaybackState State =>
+    public PlayerState State =>
         player.State switch
         {
-            VLCState.Playing => PlaybackState.PLAYING,
-            VLCState.Paused => PlaybackState.PAUSED,
-            _ => PlaybackState.NONE,
+            VLCState.Playing => PlayerState.PLAYING,
+            VLCState.Paused => PlayerState.PAUSED,
+            _ => PlayerState.NONE,
         };
 
-    public bool IsPlaying => State == PlaybackState.PLAYING;
+    public bool IsPlaying => State == PlayerState.PLAYING;
 
-    public enum PlaybackState
+    public enum PlayerState
     {
         NONE,
         PLAYING,
@@ -52,10 +52,10 @@ class AudioPlayer
     public void TogglePause()
     {
         if (player.IsPlaying) Pause();
-        else                  Resume();
+        else Resume();
     }
 
-    public void SetVolume(int volume)     => player.Volume = Math.Max(Math.Min(volume, 100), 0);
+    public void SetVolume(int volume) => player.Volume = Math.Max(Math.Min(volume, 100), 0);
     public void IncreaseVolume(int incBy) => SetVolume(Volume + incBy);
     public void DecreaseVolume(int decBy) => SetVolume(Volume - decBy);
 }

@@ -8,9 +8,9 @@ class Application
     public const int MX_TRIALS = 3; // TODO: REMOVE THIS LATER
     public const int TARGET_FPS = 30;
 
-    public Library Lib { get; }
-    public AudioPlayer Player { get; }
-    public QueueManager Queue { get; }
+    public Library Lib { get; } = new();
+    public AudioPlayer Player { get; } = new();
+    public QueueManager Queue { get; } = new();
 
     /* Application State */
     public User? CurrUser { get; set; }
@@ -20,43 +20,12 @@ class Application
 
 
     // Ui
-    private Panel playbackPanel {get; set;}
-    private Panel mainPanel {get; set;}
-    private Layout layout;
+    private Ui ui = new();
 
     public Track? CurrTrack() {
         if (CurrTrackId is Guid id && Lib.TryGetTrack(id, out var track))
             return track;
         return null;
-    }
-
-    public Application()
-    {
-        Player = new();
-        Queue = new();
-        Lib = new();
-
-        /* UI */
-        playbackPanel = new("Nothing is playing")
-        {
-            Header = new PanelHeader("Trackey", Justify.Center),
-            Expand = true
-        };
-
-        mainPanel = new("")
-        {
-            Header = new PanelHeader("Main Screen", Justify.Center),
-            Expand = true
-        };
-
-        layout = new Layout("Root")
-        .SplitRows(
-            new Layout("Playback").Size(4),
-            new Layout("Main")
-        );
-        layout["Playback"].Update(playbackPanel);
-        layout["Main"].Update(mainPanel);
-        /* ------------------------- */
     }
 
     public void Demo()
@@ -81,7 +50,7 @@ class Application
         if (Queue.CanNavigate)
             UpdateCurrTrack(Queue.Next());
 
-        AnsiConsole.Live(layout)
+        AnsiConsole.Live(ui.Layout)
         .Start(ctx =>
         {
 
@@ -94,9 +63,12 @@ class Application
                     HandleKey(key);
                 }
 
-                UpdateLayout();
+                ui.Update(lastPressed, new PlaybackState(Player.State, Player.Volume, CurrTrack()));
+                lastPressed = null; // reset
+
                 ctx.Refresh();
                 Thread.Sleep(1000 / TARGET_FPS);
+
             }
 
         });
@@ -104,54 +76,8 @@ class Application
         Console.Clear();
     }
 
-
-    public void UpdatePlaybackPanel()
-    {
-        string panelText = "";
-        if (Player.State == AudioPlayer.PlaybackState.NONE)
-            panelText = "Not Playing anything now";
-        else
-        {
-            char stateChar = Player.State == AudioPlayer.PlaybackState.PLAYING ? '⏸' : '►';
-
-            panelText += $"({stateChar}): {CurrTrack()?.Title} | {CurrTrack()?.Artist}\n";
-            panelText += $"Volume: {Player.Volume}";
-        }
-
-        playbackPanel = new Panel(panelText)
-        {
-            Header = new("Trackey", Justify.Center),
-            Expand = true
-        }.BorderColor(Color.Green);
-    }
-
-
-    public void UpdateMainPanel()
-    {
-        if (lastPressed is null) return;
-        mainPanelText += lastPressed.Value.KeyChar;
-
-        mainPanel = new Panel(mainPanelText)
-        {
-            Header = new("Main Screen", Justify.Center),
-            Expand = true
-        }.BorderColor(Color.Yellow);
-
-        lastPressed = null;
-        // Console.WriteLine("Console Updated");
-    }
-
-    public void UpdateLayout()
-    {
-        UpdatePlaybackPanel();
-        UpdateMainPanel();
-
-        layout["Playback"].Update(playbackPanel);
-        layout["Main"].Update(mainPanel);
-    }
-
     private ConsoleKeyInfo? lastPressed;
-    private string mainPanelText = "";
+
     public void HandleKey(ConsoleKeyInfo key)
     {
         if (key.KeyChar == 'Q') Quit();
