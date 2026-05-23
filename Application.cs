@@ -125,6 +125,22 @@ class Application
         }.BorderColor(Color.Green);
     }
 
+
+    public void UpdateMainPanel()
+    {
+        if (lastPressed is null) return;
+        mainPanelText += lastPressed.Value.KeyChar;
+
+        mainPanel = new Panel(mainPanelText)
+        {
+            Header = new("Main Screen", Justify.Center),
+            Expand = true
+        }.BorderColor(Color.Yellow);
+
+        lastPressed = null;
+        // Console.WriteLine("Console Updated");
+    }
+
     public void UpdateLayout()
     {
         UpdatePlaybackPanel();
@@ -134,11 +150,8 @@ class Application
         layout["Main"].Update(mainPanel);
     }
 
-    public void UpdateMainPanel()
-    {
-
-    }
-
+    private ConsoleKeyInfo? lastPressed;
+    private string mainPanelText = "";
     public void HandleKey(ConsoleKeyInfo key)
     {
         if (key.KeyChar == 'Q') Quit();
@@ -152,8 +165,15 @@ class Application
                 UpdateCurrTrack(Queue.Next());
         }
         else if (key.Key == ConsoleKey.LeftArrow)
+        {
             if (Queue.CanNavigate)
                 UpdateCurrTrack(Queue.Prev());
+        }
+        else
+        {
+            lastPressed = key;
+            // Console.WriteLine("Hi");
+        }
     }
 
     private void UpdateCurrTrack(Guid trackId)
@@ -162,21 +182,6 @@ class Application
         // e.g. Track not initialized in library
         CurrTrackId = trackId;
         Player.Play(CurrTrack()!.FileLocation);
-    }
-
-    public void Draw()
-    {
-        Console.Clear();
-        if (Player.State == AudioPlayer.PlaybackState.NONE)
-        {
-            Console.WriteLine("Not Playing anything now");
-            return;
-        }
-
-        char stateChar = Player.State == AudioPlayer.PlaybackState.PLAYING ? '⏸' : '►';
-
-        Console.WriteLine($"({stateChar}): {CurrTrack()?.Title} | {CurrTrack()?.Artist}");
-        Console.WriteLine($"Volume: {Player.Volume}");
     }
 
     private void Quit() => IsRunning = false;
