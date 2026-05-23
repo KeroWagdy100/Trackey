@@ -1,4 +1,5 @@
 namespace Trackey;
+
 using Spectre.Console;
 
 class Ui
@@ -41,7 +42,7 @@ class Ui
     public Screen CurrentScreen { get; set; } = Screen.HOME;
 
 
-    public void UpdatePlaybackPanel(PlaybackState playbackState)
+    public void UpdatePlaybackPanel(PlaybackInfo playbackState)
     {
         string panelText = "";
         if (playbackState.playerState == AudioPlayer.PlayerState.NONE)
@@ -75,7 +76,7 @@ class Ui
 
     }
 
-    public void Update(ConsoleKeyInfo? lastKeyPressed, PlaybackState playbackState)
+    public void Update(ConsoleKeyInfo? lastKeyPressed, PlaybackInfo playbackState)
     {
         UpdatePlaybackPanel(playbackState);
         UpdateMainPanel(lastKeyPressed);

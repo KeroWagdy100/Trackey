@@ -22,11 +22,9 @@ class Application
     // Ui
     private Ui ui = new();
 
-    public Track? CurrTrack() {
-        if (CurrTrackId is Guid id && Lib.TryGetTrack(id, out var track))
-            return track;
-        return null;
-    }
+    public Track? CurrTrack =>
+        CurrTrackId is Guid id && Lib.TryGetTrack(id, out var track) ? track
+        : null;
 
     public void Demo()
     {
@@ -48,7 +46,7 @@ class Application
 
         Demo();
         if (Queue.CanNavigate)
-            UpdateCurrTrack(Queue.Next());
+            SetCurrentTrack(Queue.Next());
 
         AnsiConsole.Live(ui.Layout)
         .Start(ctx =>
@@ -63,7 +61,7 @@ class Application
                     HandleKey(key);
                 }
 
-                ui.Update(lastPressed, new PlaybackState(Player.State, Player.Volume, CurrTrack()));
+                ui.Update(lastPressed, new PlaybackInfo(Player.State, Player.Volume, CurrTrack));
                 lastPressed = null; // reset
 
                 ctx.Refresh();
@@ -88,12 +86,12 @@ class Application
         else if (key.Key == ConsoleKey.RightArrow)
         {
             if (Queue.CanNavigate)
-                UpdateCurrTrack(Queue.Next());
+                SetCurrentTrack(Queue.Next());
         }
         else if (key.Key == ConsoleKey.LeftArrow)
         {
             if (Queue.CanNavigate)
-                UpdateCurrTrack(Queue.Prev());
+                SetCurrentTrack(Queue.Prev());
         }
         else
         {
@@ -102,12 +100,12 @@ class Application
         }
     }
 
-    private void UpdateCurrTrack(Guid trackId)
+    private void SetCurrentTrack(Guid trackId)
     {
         // TODO: HANDLE EDGE CASES
         // e.g. Track not initialized in library
         CurrTrackId = trackId;
-        Player.Play(CurrTrack()!.FileLocation);
+        Player.Play(CurrTrack!.FileLocation);
     }
 
     private void Quit() => IsRunning = false;
