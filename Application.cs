@@ -1,4 +1,5 @@
 using LibVLCSharp.Shared;
+using Spectre.Console;
 
 namespace Trackey;
 
@@ -18,6 +19,11 @@ class Application
     public bool IsRunning { get; set; } = true; // if false, app quits
 
 
+    // Ui
+    private Panel playbackPanel {get; set;}
+    private Panel mainPanel {get; set;}
+    private Layout layout;
+
     public Track? CurrTrack() {
         if (CurrTrackId is Guid id && Lib.TryGetTrack(id, out var track))
             return track;
@@ -29,6 +35,28 @@ class Application
         Player = new();
         Queue = new();
         Lib = new();
+
+        /* UI */
+        playbackPanel = new("Nothing is playing")
+        {
+            Header = new PanelHeader("Trackey", Justify.Center),
+            Expand = true
+        };
+
+        mainPanel = new("")
+        {
+            Header = new PanelHeader("Main Screen", Justify.Center),
+            Expand = true
+        };
+
+        layout = new Layout("Root")
+        .SplitRows(
+            new Layout("Playback").Size(4),
+            new Layout("Main")
+        );
+        layout["Playback"].Update(playbackPanel);
+        layout["Main"].Update(mainPanel);
+        /* ------------------------- */
     }
 
     public void Demo()
@@ -53,21 +81,62 @@ class Application
         if (Queue.CanNavigate)
             UpdateCurrTrack(Queue.Next());
 
-        while (IsRunning)
+        AnsiConsole.Live(layout)
+        .Start(ctx =>
         {
-            if (Console.KeyAvailable)
+
+            while (IsRunning)
             {
-                ConsoleKeyInfo key;
-                key = Console.ReadKey(true);
-                HandleKey(key);
+                if (Console.KeyAvailable)
+                {
+                    ConsoleKeyInfo key;
+                    key = Console.ReadKey(true);
+                    HandleKey(key);
+                }
+
+                UpdateLayout();
+                ctx.Refresh();
+                Thread.Sleep(1000 / TARGET_FPS);
             }
 
-            Draw();
-
-            Thread.Sleep(1000 / TARGET_FPS);
-        }
+        });
 
         Console.Clear();
+    }
+
+
+    public void UpdatePlaybackPanel()
+    {
+        string panelText = "";
+        if (Player.State == AudioPlayer.PlaybackState.NONE)
+            panelText = "Not Playing anything now";
+        else
+        {
+            char stateChar = Player.State == AudioPlayer.PlaybackState.PLAYING ? '⏸' : '►';
+
+            panelText += $"({stateChar}): {CurrTrack()?.Title} | {CurrTrack()?.Artist}\n";
+            panelText += $"Volume: {Player.Volume}";
+        }
+
+        playbackPanel = new Panel(panelText)
+        {
+            Header = new("Trackey", Justify.Center),
+            Expand = true
+        }.BorderColor(Color.Green);
+    }
+
+    public void UpdateLayout()
+    {
+        UpdatePlaybackPanel();
+        UpdateMainPanel();
+
+        layout["Playback"].Update(playbackPanel);
+        layout["Main"].Update(mainPanel);
+    }
+
+    public void UpdateMainPanel()
+    {
+
     }
 
     public void HandleKey(ConsoleKeyInfo key)
