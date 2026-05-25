@@ -31,15 +31,15 @@ class Ui
         Layout["Main"].Update(MainPanel);
     }
 
-    public enum Screen
-    {
-        HOME,
-        LIBRARY,
-        PLAYLIST,
-        ADD_TO_PLAYLIST
-    };
+    // public enum Screen
+    // {
+    //     HOME,
+    //     LIBRARY,
+    //     PLAYLIST,
+    //     ADD_TO_PLAYLIST
+    // };
 
-    public Screen CurrentScreen { get; set; } = Screen.HOME;
+    // public Screen CurrentScreen { get; set; } = Screen.HOME;
 
 
     public void UpdatePlaybackPanel(PlaybackInfo playbackState)
@@ -63,12 +63,10 @@ class Ui
     }
 
 
-    public void UpdateMainPanel(ConsoleKeyInfo? lastPressed)
+    public void UpdateMainPanel(Screen currentScreen)
     {
-        if (lastPressed is null) return;
-        mainPanelText += lastPressed.Value.KeyChar;
 
-        MainPanel = new Panel(mainPanelText)
+        MainPanel = new Panel(currentScreen.Render())
         {
             Header = new("Main Screen", Justify.Center),
             Expand = true
@@ -76,15 +74,15 @@ class Ui
 
     }
 
-    public void Update(ConsoleKeyInfo? lastKeyPressed, PlaybackInfo playbackState)
+    public void Update(Screen currentScreen, PlaybackInfo playbackState)
     {
         UpdatePlaybackPanel(playbackState);
-        UpdateMainPanel(lastKeyPressed);
+        UpdateMainPanel(currentScreen);
 
         Layout["Playback"].Update(PlaybackPanel);
         Layout["Main"].Update(MainPanel);
     }
 
-    private string mainPanelText = "";
+    // private string mainPanelText = "";
 
 }

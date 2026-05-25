@@ -21,6 +21,12 @@ class Application
 
     // Ui
     private Ui ui = new();
+    public Screen CurrentScreen { get; set; }
+
+    public Application()
+    {
+        CurrentScreen = new HomeScreen(this);
+    }
 
     public Track? CurrTrack =>
         CurrTrackId is Guid id && Lib.TryGetTrack(id, out var track) ? track
@@ -61,8 +67,8 @@ class Application
                     HandleKey(key);
                 }
 
-                ui.Update(lastPressed, new PlaybackInfo(Player.State, Player.Volume, CurrTrack));
-                lastPressed = null; // reset
+                ui.Update(CurrentScreen, new PlaybackInfo(Player.State, Player.Volume, CurrTrack));
+
 
                 ctx.Refresh();
                 Thread.Sleep(1000 / TARGET_FPS);
@@ -74,10 +80,57 @@ class Application
         Console.Clear();
     }
 
-    private ConsoleKeyInfo? lastPressed;
+    public void NavigateTo(Screen screen)
+    {
+        // TODO: Stack<Screen> 
+        CurrentScreen = screen;
+    }
 
     public void HandleKey(ConsoleKeyInfo key)
     {
+        bool captured = false;
+        if (CurrentScreen.CapturesTextInput)
+            captured |= HandleGlobalShortcuts(key);
+        else
+            captured |= HandleAllShortcuts(key);
+
+        if (captured)
+            return;
+
+        CurrentScreen.HandleInput(key);
+    }
+
+    public bool HandleGlobalShortcuts(ConsoleKeyInfo key)
+    {
+        if (!key.Modifiers.HasFlag(ConsoleModifiers.Control))
+            return false;
+
+        if (key.Key == ConsoleKey.Q) Quit();
+        else if (key.Key == ConsoleKey.UpArrow) Player.IncreaseVolume(5);
+        else if (key.Key == ConsoleKey.DownArrow) Player.DecreaseVolume(5);
+        else if (key.Key == ConsoleKey.Spacebar) Player.TogglePause();
+
+        else if (key.Key == ConsoleKey.RightArrow)
+        {
+            if (!Queue.IsEmpty)
+                SetCurrentTrack(Queue.Next());
+        }
+        else if (key.Key == ConsoleKey.LeftArrow)
+        {
+            if (!Queue.IsEmpty)
+                SetCurrentTrack(Queue.Prev());
+        }
+        else
+            return false;
+
+        return true;
+    }
+
+    public bool HandleAllShortcuts(ConsoleKeyInfo key)
+    {
+        if (HandleGlobalShortcuts(key))
+            return true;
+
         if (key.KeyChar == 'Q') Quit();
         else if (key.KeyChar == '+') Player.IncreaseVolume(5);
         else if (key.KeyChar == '-') Player.DecreaseVolume(5);
@@ -94,10 +147,9 @@ class Application
                 SetCurrentTrack(Queue.Prev());
         }
         else
-        {
-            lastPressed = key;
-            // Console.WriteLine("Hi");
-        }
+            return false;
+
+        return true;
     }
 
     private void SetCurrentTrack(Guid trackId)
