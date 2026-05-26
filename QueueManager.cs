@@ -2,31 +2,32 @@ namespace Trackey;
 
 class QueueManager
 {
-    private List<Guid> queue;
+    public List<Guid> Tracks {get; private set;}
     private int curr = -1;
 
     public QueueManager()
     {
-        queue = [];
+        Tracks = [];
     }
 
-    public void AddTrack(Guid trackId) => queue.Add(trackId);
+    public void AddTrack(Guid trackId) => Tracks.Add(trackId);
     public void AddPlaylist(Playlist playlist)
     {
         foreach (Guid trackId in playlist.Tracks)
-            queue.Add(trackId);
+            Tracks.Add(trackId);
     }
 
-    public bool IsEmpty => queue.Count == 0;
+    public bool IsEmpty => Tracks.Count == 0;
     public Guid Next()
     {
-        curr = (curr + 1) % queue.Count;
-        return queue[curr];
+        curr = (curr + 1) % Tracks.Count;
+        return Tracks[curr];
     }
 
     public Guid Prev()
     {
-        curr = (curr - 1 + queue.Count) % queue.Count;
-        return queue[curr];
+        curr = (curr - 1 + Tracks.Count) % Tracks.Count;
+        return Tracks[curr];
     }
+
 }

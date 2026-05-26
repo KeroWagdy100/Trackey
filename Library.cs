@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Trackey;
 
 class Library
@@ -5,7 +7,7 @@ class Library
     private Dictionary<Guid, Track> tracks = new();
     private Dictionary<Guid, Playlist> playlists = new();
 
-    public bool TryGetTrack(Guid trackId, out Track? track)
+    public bool TryGetTrack(Guid trackId, [NotNullWhen(true)] out Track? track)
     {
         if (!tracks.TryGetValue(trackId, out track))
             return false;
