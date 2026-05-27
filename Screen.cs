@@ -36,7 +36,7 @@ abstract class TableScreen : Screen
 
     public override IRenderable Render()
     {
-        Table table = new Table().AddColumn("Select one of the following:").Border(TableBorder.None);
+        Table table = new Table().AddColumn("").Border(TableBorder.None).HideHeaders();
         for (int i = 0; i < options.Count; ++i)
         {
             string style = hoveredIndex == i ? "yellow" : IsSelected(i) ? "red" : "gray";

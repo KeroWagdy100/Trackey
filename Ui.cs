@@ -35,8 +35,10 @@ class Ui
         );
 
         Layout["MainCol"].SplitRows(
-            new Layout("Playback").Ratio(1),
-            new Layout("Main").Ratio(4)
+            // new Layout("Playback").Ratio(1),
+            // new Layout("Main").Ratio(4)
+            new Layout("Playback").Size(4),
+            new Layout("Main")
         );
 
         Layout["Playback"].Update(PlaybackPanel);
@@ -57,13 +59,16 @@ class Ui
         int totalMinute = totalSecond / 60;
         totalSecond %= 60;
 
-        return
-            currentMinute.ToString().PadLeft(2, '0') + ":" + currentSecond.ToString().PadLeft(2, '0')
-            + " [green]"
+        string line = 
+            " [green]"
             + new string('-', filled)
             + "[/]"
-            + new string('-', width - filled)
+            + new string('-', width - filled);
+
+        return
+            currentMinute.ToString().PadLeft(2, '0') + ":" + currentSecond.ToString().PadLeft(2, '0')
             + " "
+            + line
             + totalMinute.ToString().PadLeft(2, '0') + ":" + totalSecond.ToString().PadLeft(2, '0');
     }
     
@@ -72,20 +77,19 @@ class Ui
     {
         bool currentlyPlaying = playbackState.playerState == AudioPlayer.PlayerState.PLAYING;
 
-        string mode = "";
-        if (playbackState.PlaybackControlsUnlocked)
-            mode += "[green bold][[On]][/]";
-        else
-            mode += "[gray][[Off]][/]";
+        string mode = new (' ', 13);
+        if (!playbackState.PlaybackControlsUnlocked)
+            mode = "[gray][[[bold];[/] to unlock]][/]";
+        //     mode += "[green bold][[On]][/]";
+        // else
 
         string track = "", volume = "";
         if (playbackState.playerState == AudioPlayer.PlayerState.NONE)
             track = "Not Playing anything now";
         else
         {
-            char stateChar = currentlyPlaying ? '⏸' : '►';
 
-            track += $"({stateChar}) {playbackState.currentTrack!.Title} | {playbackState.currentTrack.Artist}";
+            track += $"{playbackState.currentTrack!.Title} | {playbackState.currentTrack.Artist}";
             volume += $"Volume: {playbackState.volume}";
         }
 
@@ -99,16 +103,22 @@ class Ui
 
         Columns topColumn = new Columns(
         [
-            new Panel(mode) {Width = 7, Border = BoxBorder.None},
-            new Markup(track, trackStyle).Centered(),
-            new Markup(volume).RightJustified()
+            new Markup(mode).LeftJustified(),
+            new Markup(track).Centered(),
+            new Markup(volume).RightJustified(),
+            // new Panel(new Markup(volume).RightJustified()) {Border = BoxBorder.None},
+            // new Markup(track, trackStyle).Centered(),
+            // new Markup(volume).RightJustified()
         ]
         ).Expand();
 
         int progressBarWidth = 50;
+        char stateChar = currentlyPlaying ? '⏸' : '►';
+        string progressBar = BuildProgressBar(playbackState.CurrentTimeMs, playbackState.DurationMs, progressBarWidth);
+
         var progress = new Align(
             new Markup(
-                BuildProgressBar(playbackState.CurrentTimeMs, playbackState.DurationMs, progressBarWidth)),
+                progressBar),
             HorizontalAlignment.Center
         );
         Rows rows = new Rows(
@@ -127,13 +137,11 @@ class Ui
 
     public void UpdateMainPanel(Screen currentScreen)
     {
-
         MainPanel = new Panel(currentScreen.Render())
         {
             Header = new(currentScreen.Title, Justify.Center),
             Expand = true
         }.BorderColor(Color.Yellow);
-
     }
 
     public void UpdateQueuePanel(List<string> tracks)
@@ -143,7 +151,6 @@ class Ui
             Header = new("Queue", Justify.Center),
             Expand = true
         }.BorderColor(Color.Green);
-
     }
 
     // TODO: Remove PlaybackPanel & QueuePanel while not registered/logged-in
