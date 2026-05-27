@@ -6,5 +6,7 @@ record PlaybackInfo
     int volume,
     Track? currentTrack,
     string? username,
-    bool PlaybackControlsUnlocked
+    bool PlaybackControlsUnlocked,
+    long CurrentTimeMs,
+    long DurationMs
 );

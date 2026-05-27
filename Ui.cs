@@ -44,9 +44,33 @@ class Ui
         Layout["Queue"].Update(QueuePanel);
     }
 
+    private string BuildProgressBar(long currentMs, long totalMs, int width)
+    {
+        double ratio = (double)currentMs / totalMs;
+        int filled = (int)(ratio * width);
+
+        int currentSecond = (int)currentMs / 1000;
+        int currentMinute = currentSecond / 60;
+        currentSecond %= 60;
+
+        int totalSecond = (int)totalMs / 1000;
+        int totalMinute = totalSecond / 60;
+        totalSecond %= 60;
+
+        return
+            currentMinute.ToString().PadLeft(2, '0') + ":" + currentSecond.ToString().PadLeft(2, '0')
+            + " [green]"
+            + new string('-', filled)
+            + "[/]"
+            + new string('-', width - filled)
+            + " "
+            + totalMinute.ToString().PadLeft(2, '0') + ":" + totalSecond.ToString().PadLeft(2, '0');
+    }
+    
+
     public void UpdatePlaybackPanel(PlaybackInfo playbackState)
     {
-
+        bool currentlyPlaying = playbackState.playerState == AudioPlayer.PlayerState.PLAYING;
 
         string mode = "";
         if (playbackState.PlaybackControlsUnlocked)
@@ -59,31 +83,45 @@ class Ui
             track = "Not Playing anything now";
         else
         {
-            char stateChar = playbackState.playerState == AudioPlayer.PlayerState.PLAYING ? '⏸' : '►';
+            char stateChar = currentlyPlaying ? '⏸' : '►';
 
-            track += $"({stateChar}): {playbackState.currentTrack!.Title} | {playbackState.currentTrack.Artist}";
+            track += $"({stateChar}) {playbackState.currentTrack!.Title} | {playbackState.currentTrack.Artist}";
             volume += $"Volume: {playbackState.volume}";
         }
 
 
-        Table table = new Table()
-        .Expand()
-        .NoBorder()
-        .AddColumn("Track")
-        .AddColumn("Volume")
-        .AddColumn("Mode", col => col.Width(5).RightAligned());
-
-        table.AddRow(track, volume, mode);
-        table.HideHeaders();
-
-        string title = "Trackey";
+        string title = "[bold]Trackey";
         if (!string.IsNullOrEmpty(playbackState.username))
             title += $" - {playbackState.username}";
-        PlaybackPanel = new Panel(table)
+        title += "[/]";
+
+        var trackStyle = currentlyPlaying ? new Style(Color.Green) : new Style();
+
+        Columns topColumn = new Columns(
+        [
+            new Panel(mode) {Width = 7, Border = BoxBorder.None},
+            new Markup(track, trackStyle).Centered(),
+            new Markup(volume).RightJustified()
+        ]
+        ).Expand();
+
+        int progressBarWidth = 50;
+        var progress = new Align(
+            new Markup(
+                BuildProgressBar(playbackState.CurrentTimeMs, playbackState.DurationMs, progressBarWidth)),
+            HorizontalAlignment.Center
+        );
+        Rows rows = new Rows(
+            topColumn,
+            progress
+        ).Expand();
+
+        PlaybackPanel = new Panel(rows)
         {
-            Header = new(title, Justify.Center),
+            Header = new(title),
             Expand = true
-        }.BorderColor(playbackState.PlaybackControlsUnlocked ? Color.Green : Color.Default);
+        }.BorderColor(currentlyPlaying ? Color.Green : Color.Default);
+
     }
 
 
@@ -109,9 +147,9 @@ class Ui
     }
 
     // TODO: Remove PlaybackPanel & QueuePanel while not registered/logged-in
-    public void Update(Screen currentScreen, PlaybackInfo playbackState, List<string> tracks)
+    public void Update(Screen currentScreen, PlaybackInfo playbackInfo, List<string> tracks)
     {
-        UpdatePlaybackPanel(playbackState);
+        UpdatePlaybackPanel(playbackInfo);
         UpdateMainPanel(currentScreen);
         UpdateQueuePanel(tracks);
 

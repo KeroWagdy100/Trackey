@@ -18,7 +18,7 @@ class Application
     public Guid? CurrTrackId { get; set; }
     public bool IsPlaying => Player.IsPlaying;
     public bool IsRunning { get; set; } = true; // if false, app quits
-    public bool PlaybackControlsUnlocked {get; set;} = false;
+    public bool PlaybackControlsUnlocked { get; set; } = false;
 
     public Track? CurrTrack =>
         CurrTrackId is Guid id && Lib.TryGetTrack(id, out var track) ? track
@@ -80,18 +80,21 @@ class Application
                         Player.Volume,
                         CurrTrack,
                         CurrUser?.Username,
-                        PlaybackControlsUnlocked),
+                        PlaybackControlsUnlocked,
+                        Player.TimeMs,
+                        Player.DurationMs
+                        ),
                         GetQueueTracksAsString()
                     );
 
 
                 ctx.Refresh();
                 Thread.Sleep(1000 / TARGET_FPS);
-
             }
 
         });
 
+        Logger.Log(Player.TimeMs.ToString());
         Users.SaveUsers();
     }
 

@@ -46,6 +46,9 @@ class AudioPlayer
         player.Play();
     }
 
+    public long TimeMs => player.Time;
+    public long DurationMs => player.Length;
+
     public void Stop() => player.Stop();
     public void Pause() => player.Pause();
     public void Resume() => player.SetPause(false);

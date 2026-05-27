@@ -49,10 +49,10 @@ abstract class TableScreen : Screen
 
     public override void HandleInput(ConsoleKeyInfo key)
     {
-        if (key.Key == ConsoleKey.DownArrow)
-            MoveDown();
-        else if (key.Key == ConsoleKey.UpArrow)
+        if (key.Key == ConsoleKey.UpArrow || key.Key == ConsoleKey.Tab && key.Modifiers.HasFlag(ConsoleModifiers.Shift))
             MoveUp();
+        else if (key.Key == ConsoleKey.DownArrow || key.Key == ConsoleKey.Tab)
+            MoveDown();
         else if (key.Key == ConsoleKey.Enter)
         {
             if (IsMultiselect)
@@ -250,14 +250,14 @@ sealed class LoginScreen : PromptScreen
             if (result.Field == "username")
             {
                 ClearErrors(0);
-                Reset(0);
+                // Reset(0);
                 foreach (var e in result!.Errors!)
                     AddError(0, e);
             }
             else
             {
                 ClearErrors(1);
-                Reset(1);
+                // Reset(1);
                 foreach (var e in result!.Errors!)
                     AddError(1, e);
             }
