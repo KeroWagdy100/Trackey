@@ -89,12 +89,12 @@ sealed class HomeScreen : TableScreen
         if (index == 0)
         {
             // Login
-            app.NavigateTo(new LoginScreen(app));
+            app.NavigateTo(new LoginScreen(app), true);
         }
         else
         {
             // Register
-            app.NavigateTo(new RegisterScreen(app));
+            app.NavigateTo(new RegisterScreen(app), true);
         }
     }
 
@@ -265,7 +265,7 @@ sealed class LoginScreen : PromptScreen
         }
 
         app.SetCurrentUser(user!.Id);
-        app.NavigateTo(new HomeScreen(app));
+        app.NavigateTo(new HomeScreen(app), false);
     }
 }
 
@@ -300,6 +300,6 @@ sealed class RegisterScreen : PromptScreen
         }
 
         app.SetCurrentUser(user!.Id);
-        app.NavigateTo(new HomeScreen(app));
+        app.NavigateTo(new HomeScreen(app), false);
     }
 }

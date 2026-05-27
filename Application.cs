@@ -110,10 +110,32 @@ class Application
         return tracks;
     }
 
-    public void NavigateTo(Screen screen)
+    public Stack<Screen> backScreens = new();
+    public Stack<Screen> forwardScreens = new();
+    public void NavigateTo(Screen nextScreen, bool saveHistory)
     {
-        // TODO: Stack<Screen> 
-        CurrentScreen = screen;
+        if (saveHistory && CurrentScreen != null)
+            backScreens.Push(CurrentScreen);
+
+        CurrentScreen = nextScreen;
+
+        forwardScreens.Clear();
+    }
+
+    public void NavigateBack()
+    {
+        if (backScreens.Count == 0)
+            return;
+        forwardScreens.Push(CurrentScreen);
+        CurrentScreen = backScreens.Pop();
+    }
+
+    public void NavigateForward()
+    {
+        if (forwardScreens.Count == 0)
+            return;
+        backScreens.Push(CurrentScreen);
+        CurrentScreen = forwardScreens.Pop();
     }
 
     public void HandleKey(ConsoleKeyInfo key)
@@ -150,10 +172,7 @@ class Application
             CurrentScreen.HandleInput(key);
     }
 
-    public void TogglePlaybackControls()
-    {
-        PlaybackControlsUnlocked ^= true;
-    }
+    public void TogglePlaybackControls() => PlaybackControlsUnlocked ^= true;
 
     public void HandlePlaybackShortcuts(ConsoleKeyInfo key)
     {
@@ -184,13 +203,9 @@ class Application
                 SetCurrentTrack(Queue.Prev());
         }
         else if (key.KeyChar == '>')
-        {
-            // next screen
-        }
+            NavigateForward();
         else if (key.KeyChar == '<')
-        {
-            // prev screen
-        }
+            NavigateBack();
         else
             return false;
 
