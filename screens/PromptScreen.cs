@@ -121,7 +121,7 @@ abstract class PromptScreen : Screen
                 continue;
 
             var res = q.Validator(q.answer);
-            q.errors = res.Errors;
+            q.errors = res.Errors ?? [];
         }
     }
 }

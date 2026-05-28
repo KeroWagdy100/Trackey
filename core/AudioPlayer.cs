@@ -1,4 +1,5 @@
 using System.Diagnostics.Tracing;
+using System.Security.Cryptography.X509Certificates;
 using LibVLCSharp.Shared;
 
 namespace Trackey;
@@ -9,11 +10,17 @@ class AudioPlayer
     private MediaPlayer player;
     private Media? currentMedia;
 
+    public event EventHandler? TrackEnded;
+
     public AudioPlayer()
     {
         Core.Initialize();
         libvlc = new LibVLC();
         player = new MediaPlayer(libvlc);
+        player.EndReached += (_, _) =>
+        {
+            TrackEnded?.Invoke(this, EventArgs.Empty);
+        };
     }
 
 

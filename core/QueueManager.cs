@@ -1,8 +1,10 @@
+using System.Data.Common;
+
 namespace Trackey;
 
 class QueueManager
 {
-    public List<Guid> Tracks {get; private set;}
+    public List<Guid> Tracks { get; private set; }
     private int curr = -1;
 
     public QueueManager()
@@ -13,7 +15,7 @@ class QueueManager
     public void AddTrack(Guid trackId) => Tracks.Add(trackId);
     public void AddPlaylist(Playlist playlist)
     {
-        foreach (Guid trackId in playlist.Tracks)
+        foreach (Guid trackId in playlist.TrackIds)
             Tracks.Add(trackId);
     }
 
@@ -30,4 +32,28 @@ class QueueManager
         return Tracks[curr];
     }
 
+    public IEnumerable<QueueItem> QueueItems()
+    {
+        for (int i = 0; i < Tracks.Count; ++i)
+        {
+            yield return new QueueItem(
+                new Track() {Id = Tracks[i]}, 
+                i < curr ? QueueItemType.PREVIOUS :
+                i == curr ? QueueItemType.CURRENT :
+                QueueItemType.NEXT
+            );
+        }
+    }
 }
+
+record QueueItem(
+    Track Track,
+    QueueItemType Type
+);
+
+enum QueueItemType
+{
+    PREVIOUS,
+    CURRENT,
+    NEXT
+};

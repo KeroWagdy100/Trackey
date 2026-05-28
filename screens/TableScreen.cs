@@ -5,11 +5,10 @@ using Spectre.Console.Rendering;
 
 abstract class TableScreen : Screen
 {
-    protected TableScreen(Application app, List<string> options) : base(app)
+    protected TableScreen(Application app) : base(app)
     {
-        this.options = options;
     }
-    protected List<string> options;
+    protected List<string> options = [];
 
     protected int hoveredIndex = 0;
     protected HashSet<int> selectedIndices = new();

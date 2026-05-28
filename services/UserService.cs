@@ -35,6 +35,7 @@ class UserService
         newUser = new() { Id = Guid.NewGuid(), Username = username , Password = password };
         users.Add(newUser);
 
+        _ = SaveUsers();
         return new(true, null, null);
     }
 
@@ -131,39 +132,54 @@ class UserService
         return user is not null;
     }
 
-    public bool LoadUsers()
+    private const string USERS_FILEPATH = "./data/users.json";
+    private static readonly JsonSerializerOptions JsonOptions = new()
     {
-        // TODO: Handle Better
+        WriteIndented = true,
+        PropertyNameCaseInsensitive = true
+    };
+
+    public async Task<bool> LoadUsers()
+    {
         users = [];
-        if (!File.Exists("./data/users.json"))
+        if (!File.Exists(USERS_FILEPATH))
             return true;
 
         try
         {
-            using FileStream usersFile = File.Open("./data/users.json", FileMode.Open);
+            using FileStream fs = File.Open(USERS_FILEPATH, FileMode.Open);
 
-            users = JsonSerializer.Deserialize<List<User>>(usersFile) ?? [];
+            var data = await JsonSerializer.DeserializeAsync<List<User>>(fs);
 
+            if (data is null)
+                return false;
+
+            users = data;
+
+            Logger.Log($"Loaded Users Successfully");
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            Logger.Log(ex.ToString());
             return false;
         }
     }
 
-    public bool SaveUsers()
+    public async Task<bool> SaveUsers()
     {
         try
         {
             using FileStream fs = File.Open("./data/users.json", FileMode.Create);
 
-            JsonSerializer.Serialize(fs, users);
+            await JsonSerializer.SerializeAsync(fs, users, JsonOptions);
 
+            Logger.Log($"Saved Users Successfully");
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            Logger.Log(ex.ToString());
             return false;
         }
     }

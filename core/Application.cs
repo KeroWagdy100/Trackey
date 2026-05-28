@@ -9,7 +9,6 @@ namespace Trackey;
 
 class Application
 {
-    public const int MX_TRIALS = 3; // TODO: REMOVE THIS LATER
     public const int TARGET_FPS = 30;
 
     public Library Lib { get; } = new();
@@ -38,35 +37,39 @@ class Application
     private Ui ui = new();
     public Screen CurrentScreen { get; set; }
 
+    public async Task InitializeAsync()
+    {
+        await Users.LoadUsers();
+        await Lib.LoadLibrary();
+
+        // Adds all tracks in library directly to queue
+        var allTracks = Lib.AllTracksIds;
+        foreach (var id in allTracks)
+            Queue.AddTrack(id);
+    }
+
+    public async Task FinalizeAsync()
+    {
+        await Users.SaveUsers();
+        await Lib.SaveLibrary();
+        Logger.Clear();
+    }
+
     public Application()
     {
         CurrentScreen = new HomeScreen(this);
-        Users.LoadUsers();
+        Player.TrackEnded += OnTrackEnded;
     }
 
-    public void Demo()
+    private bool nextTrackRequested = false;
+    public void OnTrackEnded(object? sender, EventArgs eventArgs)
     {
-        Track track1 = new() { FileLocation = "./music/file1.mp3", Title = "Khaleek Fakerny", Artist = "Amr Diab" };
-        Track track2 = new() { FileLocation = "./music/file2.mp3", Title = "Khaleek Ma3aya", Artist = "Amr Diab" };
-        Lib.AddTrack(track1);
-        Lib.AddTrack(track2);
-
-        Playlist pop = new();
-        pop.AddTrack(track1.Id).AddTrack(track2.Id);
-        Lib.AddPlaylist(pop);
-
-        Queue.AddPlaylist(pop);
+        nextTrackRequested = true;
+        Logger.Log("Next Track Requested");
     }
 
     public void Run()
     {
-        Console.Clear();
-        Logger.Clear();
-
-        Demo();
-        if (!Queue.IsEmpty)
-            SetCurrentTrack(Queue.Next());
-
         AnsiConsole.Live(ui.Layout)
         .Start(ctx =>
         {
@@ -90,31 +93,43 @@ class Application
                         Player.TimeMs,
                         Player.DurationMs
                         ),
-                        GetQueueTracksAsString(),
+                        GetQueueItems(),
                         ActiveDownloads
                     );
+
                 UpdateActiveDownloads();
+                UpdateQueue();
+
+                if (CurrTrack is null)
+                    OnTrackEnded(null, new());
 
                 ctx.Refresh();
                 Thread.Sleep(1000 / TARGET_FPS);
             }
 
         });
-
-        Logger.Log(Player.TimeMs.ToString());
-        Users.SaveUsers();
     }
 
-    public List<string> GetQueueTracksAsString()
+    public void UpdateQueue()
     {
-        List<string> tracks = [];
-        foreach (var trackId in Queue.Tracks)
+        if (!nextTrackRequested)
+            return;
+        if (!Queue.IsEmpty)
         {
-            if (Lib.TryGetTrack(trackId, out Track? track))
-                tracks.Add(track.Title);
-
+            nextTrackRequested = false;
+            SetCurrentTrack(Queue.Next());
+            Logger.Log("Next Track Invoked");
         }
-        return tracks;
+    }
+
+    public IEnumerable<QueueItem> GetQueueItems()
+    {
+        var items = Queue.QueueItems();
+        foreach (var item in items)
+        {
+            if (Lib.TryGetTrack(item.Track.Id, out Track? track))
+                yield return new QueueItem(track, item.Type);
+        }
     }
 
     public Stack<Screen> backScreens = new();
@@ -245,29 +260,48 @@ class Application
         return true;
     }
 
-    public void SetCurrentUser(Guid userId)
+    public void SetCurrentUser(Guid? userId)
     {
         CurrUserId = userId;
     }
 
     private void SetCurrentTrack(Guid trackId)
     {
-        // TODO: HANDLE EDGE CASES
-        // e.g. Track not initialized in library
         CurrTrackId = trackId;
-        Player.Play(CurrTrack!.FileLocation);
+        if (CurrTrack is not null)
+            Player.Play(CurrTrack.Filepath);
     }
 
     public async Task AddDownload(string url)
     {
         var data = await Downloader.DownloadMetadataAsync(url);
-        var taskInfo = new DownloadTaskInfo() {Id = Guid.NewGuid(), Title = data.Title};
+        var taskInfo = new DownloadTaskInfo() {
+            Id = Guid.NewGuid(),
+            Title = data.Title,
+            Url = url,
+            Artist = data.Channel
+        };
 
         ActiveDownloads.Add(taskInfo);
 
-        var res  = await Downloader.DownloadAudioAsync(url, taskInfo.UpdateProgress, new());
+        var res = await Downloader.DownloadAudioAsync(url, taskInfo.UpdateProgress, new());
         taskInfo.CompletedAt = DateTime.Now;
-        // ActiveDownloads.RemoveAt(ActiveDownloads.Count - 1);
+        taskInfo.FilePath = res.Filepath;
+        taskInfo.ErrorMessage = string.Join("\n", res.ErrorResult);
+
+        var track = new Track()
+        {
+            Id           = Guid.NewGuid(),
+            OwnerUserId  = CurrUserId!.Value,
+            Title        = taskInfo.Title,
+            Artist       = taskInfo.Artist,
+            SourceUrl    = taskInfo.Url,  
+            Filepath     = taskInfo.FilePath!,
+            DownloadedAt = taskInfo.CompletedAt.Value
+        };
+
+        await Lib.AddTrack(track);
+        Queue.AddTrack(track.Id);
     }
 
     public void UpdateActiveDownloads()
@@ -279,10 +313,7 @@ class Application
         );
     }
 
-    public void RemoveActiveDownload(Guid taskId)
-    {
-        ActiveDownloads.RemoveAll(t => t.Id == taskId);
-    }
+    public void RemoveActiveDownload(Guid taskId) => ActiveDownloads.RemoveAll(t => t.Id == taskId);
 
     private void Quit() => IsRunning = false;
 }

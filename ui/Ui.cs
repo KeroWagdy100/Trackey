@@ -1,5 +1,6 @@
 namespace Trackey;
 
+using System.Runtime.CompilerServices;
 using Spectre.Console;
 using Trackey.models;
 using YoutubeDLSharp;
@@ -39,13 +40,11 @@ class Ui
         };
 
         Layout = new Layout("Root").SplitColumns(
-            new Layout("MainCol").Ratio(5),
+            new Layout("MainCol").Ratio(3),
             new Layout("Queue").Ratio(1)
         );
 
         Layout["MainCol"].SplitRows(
-            // new Layout("Playback").Ratio(1),
-            // new Layout("Main").Ratio(4)
             new Layout("Playback").Size(4),
             new Layout("Main"),
             new Layout("Downloads").Size(4)
@@ -70,62 +69,52 @@ class Ui
         int totalMinute = totalSecond / 60;
         totalSecond %= 60;
 
-        string line = 
-            " [green]"
-            + new string('-', filled)
-            + "[/]"
-            + new string('-', width - filled);
+        string line =
+        totalMs == -1 ?
+        new string('-', width)
+        : "[green]" + new string('-', filled) + "[/]" + new string('-', width - filled);
 
         return
             currentMinute.ToString().PadLeft(2, '0') + ":" + currentSecond.ToString().PadLeft(2, '0')
             + " "
             + line
+            + " "
             + totalMinute.ToString().PadLeft(2, '0') + ":" + totalSecond.ToString().PadLeft(2, '0');
     }
     
 
-    public void UpdatePlaybackPanel(PlaybackInfo playbackState)
+    public void UpdatePlaybackPanel(PlaybackInfo info)
     {
-        bool currentlyPlaying = playbackState.playerState == AudioPlayer.PlayerState.PLAYING;
-
+        bool currentlyPlaying = info.playerState == AudioPlayer.PlayerState.PLAYING;
+        
         string mode = new (' ', 13);
-        if (!playbackState.PlaybackControlsUnlocked)
+        if (!info.PlaybackControlsUnlocked)
             mode = "[gray][[[bold];[/] to unlock]][/]";
-        //     mode += "[green bold][[On]][/]";
-        // else
 
-        string track = "", volume = "";
-        if (playbackState.playerState == AudioPlayer.PlayerState.NONE)
-            track = "Not Playing anything now";
+        string volume = $"Volume: {info.volume}";
+
+        string track =
+        info.playerState == AudioPlayer.PlayerState.NONE ? "Not Playing anything now"
+        : $"{Markup.Escape(info.currentTrack?.Title ?? "")} | {Markup.Escape(info.currentTrack?.Artist ?? "")}";
+
+
+        string title = "[bold]";
+        if (!string.IsNullOrEmpty(info.username))
+            title += $"{Markup.Escape(info.username)}";
         else
-        {
-
-            track += $"{playbackState.currentTrack!.Title} | {playbackState.currentTrack.Artist}";
-            volume += $"Volume: {playbackState.volume}";
-        }
-
-
-        string title = "[bold]Trackey";
-        if (!string.IsNullOrEmpty(playbackState.username))
-            title += $" - {playbackState.username}";
+            title += $"Trackey";
         title += "[/]";
-
-        var trackStyle = currentlyPlaying ? new Style(Color.Green) : new Style();
 
         Columns topColumn = new Columns(
         [
             new Markup(mode).LeftJustified(),
             new Markup(track).Centered(),
             new Markup(volume).RightJustified(),
-            // new Panel(new Markup(volume).RightJustified()) {Border = BoxBorder.None},
-            // new Markup(track, trackStyle).Centered(),
-            // new Markup(volume).RightJustified()
         ]
         ).Expand();
 
         int progressBarWidth = 50;
-        char stateChar = currentlyPlaying ? '⏸' : '►';
-        string progressBar = BuildProgressBar(playbackState.CurrentTimeMs, playbackState.DurationMs, progressBarWidth);
+        string progressBar = BuildProgressBar(info.CurrentTimeMs, info.DurationMs, progressBarWidth);
 
         var progress = new Align(
             new Markup(
@@ -155,9 +144,34 @@ class Ui
         }.BorderColor(Color.Yellow);
     }
 
-    public void UpdateQueuePanel(List<string> tracks)
+    public void UpdateQueuePanel(IEnumerable<QueueItem> queueItems)
     {
-        QueuePanel = new Panel(new Markup(string.Join("\n", tracks)))
+        QueueItem? lastPrev = null;
+        List<QueueItem> visible = [];
+        foreach (var item in queueItems)
+        {
+            if (item.Type == QueueItemType.PREVIOUS) lastPrev = item;
+            else visible.Add(item);
+        }
+        if (lastPrev is not null)
+            visible.Insert(0, lastPrev);
+
+        string text = "";
+        foreach (var item in queueItems)
+        {
+            string color = "white";
+            if (item.Type == QueueItemType.PREVIOUS)
+                color = "gray";
+            else if (item.Type == QueueItemType.CURRENT)
+                color = "green";
+
+            string title = Markup.Escape(item.Track.Title);
+            // title = (string)title.Select(c => !char.IsAscii(c) ? '?' : c);
+
+            text += $"[{color}]{title}[/]";
+        }
+
+        QueuePanel = new Panel(new Markup(text))
         {
             Header = new("Queue", Justify.Center),
             Expand = true
@@ -171,13 +185,13 @@ class Ui
         {
             if (d.State == DownloadState.Success)
             {
-                rows.Add(new Markup($"[green]✓ Downloaded: {d.Title}[/]"));
+                rows.Add(new Markup($"[green]✓ Downloaded: {Markup.Escape(d.Title)}[/]"));
                 continue;
             }
 
             string line = "";
             if (d.Title.Length > 15)
-                line += $"{d.Title.AsSpan(0, 15)}..";
+                line += $"{Markup.Escape(d.Title).AsSpan(0, 15)}..";
             else
                 line += $"{d.Title}";
 
@@ -192,6 +206,7 @@ class Ui
             + Math.Round(d.Progress.Progress * 100.0).ToString() + "%";
 
 
+            
             rows.Add(new Markup(line));
         }
 
@@ -206,11 +221,16 @@ class Ui
 
 
     // TODO: Remove PlaybackPanel & QueuePanel while not registered/logged-in
-    public void Update(Screen currentScreen, PlaybackInfo playbackInfo, List<string> tracks, List<DownloadTaskInfo> downloads)
+    public void Update(
+        Screen currentScreen,
+        PlaybackInfo playbackInfo,
+        IEnumerable<QueueItem> queueTracks,
+        List<DownloadTaskInfo> downloads
+        )
     {
         UpdatePlaybackPanel(playbackInfo);
         UpdateMainPanel(currentScreen);
-        UpdateQueuePanel(tracks);
+        UpdateQueuePanel(queueTracks);
         Layout["Playback"].Update(PlaybackPanel);
         Layout["Main"].Update(MainPanel);
         Layout["Queue"].Update(QueuePanel);

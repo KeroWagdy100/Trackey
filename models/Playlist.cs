@@ -4,15 +4,19 @@ namespace Trackey;
 
 class Playlist
 {
-    public Guid Id {get; set;} = Guid.NewGuid();
-    public string Title { get; set; } = "N/A";
-    public List<Guid> Tracks {get; private set;} = [];
+    public Guid Id { get; set; }
+    public Guid OwnerUserId { get; set; }
+    public List<Guid> TrackIds { get; private set; } = [];
+
+    public string Title { get; set; } = "";
+
+    public DateTime CreatedAt { get; private set; }
 
     public Playlist AddTrack(Guid id)
     {
-        Tracks.Add(id);
+        TrackIds.Add(id);
         return this;
     }
 
-    public bool RemoveTrack(Guid id) => Tracks.Remove(id);
+    public bool RemoveTrack(Guid id) => TrackIds.Remove(id);
 }
