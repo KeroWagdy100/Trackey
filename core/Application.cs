@@ -1,5 +1,9 @@
+using System.Diagnostics;
+using System.Security;
+using System.Threading.Tasks;
 using LibVLCSharp.Shared;
 using Spectre.Console;
+using Trackey.models;
 
 namespace Trackey;
 
@@ -12,6 +16,7 @@ class Application
     public AudioPlayer Player { get; } = new();
     public QueueManager Queue { get; } = new();
     public UserService Users { get; } = new();
+    public DownloadService Downloader { get; } = new();
 
     /* Application State */
     public Guid? CurrUserId { get; set; }
@@ -19,6 +24,7 @@ class Application
     public bool IsPlaying => Player.IsPlaying;
     public bool IsRunning { get; set; } = true; // if false, app quits
     public bool PlaybackControlsUnlocked { get; set; } = false;
+    public List<DownloadTaskInfo> ActiveDownloads = [];
 
     public Track? CurrTrack =>
         CurrTrackId is Guid id && Lib.TryGetTrack(id, out var track) ? track
@@ -84,9 +90,10 @@ class Application
                         Player.TimeMs,
                         Player.DurationMs
                         ),
-                        GetQueueTracksAsString()
+                        GetQueueTracksAsString(),
+                        ActiveDownloads
                     );
-
+                UpdateActiveDownloads();
 
                 ctx.Refresh();
                 Thread.Sleep(1000 / TARGET_FPS);
@@ -249,6 +256,32 @@ class Application
         // e.g. Track not initialized in library
         CurrTrackId = trackId;
         Player.Play(CurrTrack!.FileLocation);
+    }
+
+    public async Task AddDownload(string url)
+    {
+        var data = await Downloader.DownloadMetadataAsync(url);
+        var taskInfo = new DownloadTaskInfo() {Id = Guid.NewGuid(), Title = data.Title};
+
+        ActiveDownloads.Add(taskInfo);
+
+        var res  = await Downloader.DownloadAudioAsync(url, taskInfo.UpdateProgress, new());
+        taskInfo.CompletedAt = DateTime.Now;
+        // ActiveDownloads.RemoveAt(ActiveDownloads.Count - 1);
+    }
+
+    public void UpdateActiveDownloads()
+    {
+        var now = DateTime.Now;
+        ActiveDownloads.RemoveAll(
+        t => t.CompletedAt is DateTime completed
+        && (now - completed).TotalSeconds >= 4
+        );
+    }
+
+    public void RemoveActiveDownload(Guid taskId)
+    {
+        ActiveDownloads.RemoveAll(t => t.Id == taskId);
     }
 
     private void Quit() => IsRunning = false;

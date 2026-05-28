@@ -1,4 +1,7 @@
-﻿namespace Trackey;
+﻿
+using YoutubeDLSharp;
+
+namespace Trackey;
 
 class Program
 {
@@ -8,6 +11,7 @@ class Program
         Application app = new();
         app.Run();
     }
+
 }
 
 

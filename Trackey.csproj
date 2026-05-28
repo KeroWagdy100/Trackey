@@ -10,6 +10,7 @@
   <ItemGroup>
     <PackageReference Include="LibVLCSharp" Version="3.9.7.1" />
     <PackageReference Include="Spectre.Console" Version="0.55.2" />
+    <PackageReference Include="YoutubeDLSharp" Version="1.2.0" />
   </ItemGroup>
 
 </Project>
