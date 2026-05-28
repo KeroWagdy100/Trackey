@@ -5,7 +5,9 @@
 Trackey is a cross-platform console music player written in C#.
 The project focuses on creating a responsive and visually clean terminal application while exploring application architecture, async programming, and state-driven UI systems.
 
----
+# Preview
+
+![Screenshot of Home Screen in Trackey](./docs/screenshot.png)
 
 # Features
 
@@ -16,7 +18,6 @@ The project focuses on creating a responsive and visually clean terminal applica
 * YouTube audio downloading with live progress tracking
 * Real-time updating console UI
 
----
 
 # Current Status
 
@@ -41,7 +42,8 @@ Planned:
 * Better styling & animations
 * Persistent library system
 
----
+
+
 
 # Requirements
 
@@ -66,7 +68,6 @@ Verify installation:
 dotnet --version
 ```
 
----
 
 ## 2. VLC / libVLC
 
@@ -82,7 +83,6 @@ sudo apt install vlc libvlc-dev
 
 Install VLC Media Player from the official VLC website.
 
----
 
 ## 3. ffmpeg
 
@@ -104,7 +104,6 @@ Verify:
 ffmpeg -version
 ```
 
----
 
 ## 4. yt-dlp
 
@@ -126,7 +125,6 @@ Verify:
 yt-dlp --version
 ```
 
----
 
 # Running the Project
 
@@ -148,14 +146,6 @@ Run:
 ```bash id="r10"
 dotnet run
 ```
-
----
-
-# Preview
-
-![Screenshot of Home Screen in Trackey](./docs/screenshot.png)
-
----
 
 # Notes
 
