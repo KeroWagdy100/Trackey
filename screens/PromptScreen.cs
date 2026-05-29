@@ -5,13 +5,19 @@ namespace Trackey;
 
 abstract class PromptScreen : Screen
 {
-    public class Question(string prompt, Func<string, ValidationResult>? validator, string answer = "", bool answered = false)
+    public class Question(
+        string prompt,
+        Func<string, ValidationResult>? validator = null,
+        Predicate<char>? isValidChar = null,
+        string answer = "",
+        bool answered = false)
     {
         public string prompt = prompt;
         public string answer = answer;
         public bool isAnswered = answered;
         public List<string> errors = [];
         public Func<string, ValidationResult>? Validator = validator;
+        public Predicate<char>? IsValidChar = isValidChar;
     }
 
     protected List<Question> questions;
@@ -56,7 +62,7 @@ abstract class PromptScreen : Screen
             if (currentQuestionIndex == questions.Count - 1)
                 OnSubmit();
             else
-                ++currentQuestionIndex;
+                MoveToNext();
         }
         else if (key.Key == ConsoleKey.Backspace)
         {
@@ -71,9 +77,13 @@ abstract class PromptScreen : Screen
             MoveToPrev();
         else if (key.Key == ConsoleKey.DownArrow || key.Key == ConsoleKey.Tab)
             MoveToNext();
-        else if (char.IsLetterOrDigit(key.KeyChar) || UserService.VALID_SPECIAL_CHARS.Any(c => c == key.KeyChar))
+        else
         {
             Question question = questions[currentQuestionIndex];
+
+            if (question.IsValidChar is not null && !question.IsValidChar(key.KeyChar))
+                return;
+
             question.answer += key.KeyChar;
             questions[currentQuestionIndex] = question;
             UpdateValidation();

@@ -5,8 +5,8 @@ sealed class RegisterScreen : PromptScreen
     public RegisterScreen(Application app) : base(app)
     {
         Title = "Register Screen";
-        questions.Add(new Question("username", app.Users.ValidateUsername));
-        questions.Add(new Question("password", app.Users.ValidatePassword));
+        questions.Add(new Question("username", app.Users.ValidateUsername, UserService.ValidateChar));
+        questions.Add(new Question("password", app.Users.ValidatePassword, UserService.ValidateChar));
     }
 
     protected override void OnSubmit()

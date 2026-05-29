@@ -12,6 +12,9 @@ class Library
     private Dictionary<Guid, Playlist> Playlists = [];
     private const string LIB_FILEPATH = "./data/library.json";
 
+    public static Predicate<char> ValidateTitleChar = c => char.IsAsciiLetterOrDigit(c) || "!@#$%^&*()[] ".Contains(c);
+    public static Predicate<char> ValidateArtistChar = c => char.IsAsciiLetterOrDigit(c) || "!@#$%^&*()[] ".Contains(c);
+
     public List<Guid> AllTracksIds => Tracks.Keys.ToList();
 
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -67,7 +70,8 @@ class Library
     {
         try
         {
-            var data = new LibraryData() {
+            var data = new LibraryData()
+            {
                 Tracks = Tracks.Values.ToList(),
                 Playlists = Playlists.Values.ToList()
             };
@@ -89,12 +93,12 @@ class Library
         }
     }
 
-    public async Task AddTrack(Track track) 
+    public async Task AddTrack(Track track)
     {
         Tracks[track.Id] = track;
         await SaveLibrary();
     }
-    public async Task AddPlaylist(Playlist playlist) 
+    public async Task AddPlaylist(Playlist playlist)
     {
         Playlists[playlist.Id] = playlist;
         await SaveLibrary();

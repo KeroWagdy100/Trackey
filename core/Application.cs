@@ -261,15 +261,14 @@ class Application
             Player.Play(CurrTrack.Filepath);
     }
 
-    public async Task AddDownload(string url)
+    public async Task AddDownload(string url, string title, string artist)
     {
-        var data = await Downloader.DownloadMetadataAsync(url);
         var taskInfo = new DownloadTaskInfo()
         {
             Id = Guid.NewGuid(),
-            Title = data.Title,
+            Title = title,
             Url = url,
-            Artist = data.Channel
+            Artist = artist
         };
 
         ActiveDownloads.Add(taskInfo);

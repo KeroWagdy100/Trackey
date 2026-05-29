@@ -76,6 +76,8 @@ class UserService
     private const int MAX_PASSWORD_LEN = 31;
     public const string VALID_SPECIAL_CHARS = "!@#$%^&*_";
 
+    public static Predicate<char> ValidateChar = c => char.IsLetterOrDigit(c) || VALID_SPECIAL_CHARS.Contains(c);
+
     private const string PASSWORD_RULES =
         "1. It's length should be in range[7, 31]"
         + $"\n2. Has only (upper letters, lower letters, digits or special characters ({VALID_SPECIAL_CHARS}))"

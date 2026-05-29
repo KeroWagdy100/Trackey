@@ -22,6 +22,8 @@ class DownloadService
 {
     private readonly YoutubeDL ytdl;
 
+    public static Predicate<char> ValidateUrlChar = c => char.IsLetterOrDigit(c) || ":=./?_".Contains(c);
+
     public DownloadService()
     {
         ytdl = new YoutubeDL

@@ -1,5 +1,3 @@
-using System.Diagnostics.Tracing;
-using System.Security.Cryptography.X509Certificates;
 using LibVLCSharp.Shared;
 
 namespace Trackey;
@@ -23,7 +21,12 @@ class AudioPlayer
         };
     }
 
-
+    public enum PlayerState
+    {
+        NONE,
+        PLAYING,
+        PAUSED,
+    }
 
     public int Volume => IsMuted ? 0 : player.Volume;
     public PlayerState State =>
@@ -36,12 +39,6 @@ class AudioPlayer
 
     public bool IsPlaying => State == PlayerState.PLAYING;
 
-    public enum PlayerState
-    {
-        NONE,
-        PLAYING,
-        PAUSED,
-    }
 
     public void Play(string filename)
     {
