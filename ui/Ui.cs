@@ -67,13 +67,28 @@ class Ui
             Expand = true
         };
 
-        Layout = new Layout("Root").SplitColumns(
-            new Layout("MainCol").Ratio(3),
+        // Layout = new Layout("Root").SplitColumns(
+        //     new Layout("MainCol").Ratio(3),
+        //     new Layout("Queue").Ratio(1)
+        // );
+
+        // Layout["MainCol"].SplitRows(
+        //     new Layout("Playback").Size(4),
+        //     new Layout("Main"),
+        //     new Layout("Downloads").Size(4)
+        // );
+
+        Layout = new Layout("Root").SplitRows(
+            new Layout("MainRow"),
+            new Layout("Playback").Size(4)
+        );
+
+        Layout["MainRow"].SplitColumns(
+            new Layout("MainWindow").Ratio(3),
             new Layout("Queue").Ratio(1)
         );
 
-        Layout["MainCol"].SplitRows(
-            new Layout("Playback").Size(4),
+        Layout["MainWindow"].SplitRows(
             new Layout("Main"),
             new Layout("Downloads").Size(4)
         );

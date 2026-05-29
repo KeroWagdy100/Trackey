@@ -20,17 +20,17 @@ sealed class DownloadScreen : PromptScreen
         {
             var data = await app.Downloader.DownloadMetadataAsync(Answer(0));
 
-            Logger.Log($"Metadata: {data.Title} - {data.Artist}");
+            Logger.Log($"Metadata: {data?.Title} - {data?.Artist}");
 
-            string title = string.IsNullOrEmpty(data.Title) ?
+            string title = string.IsNullOrEmpty(data?.Title) ?
             "N/A" :
-            string.Concat(data.Title.Select(c => Library.ValidateTitleChar(c) ? c : '?'));
+            string.Concat(data?.Title.Select(c => Library.ValidateTitleChar(c) ? c : '?') ?? "");
 
             questions[1].Input.SetText(title);
 
-            string artist = string.IsNullOrEmpty(data.Channel) ?
+            string artist = string.IsNullOrEmpty(data?.Channel) ?
             "N/A" :
-            string.Concat(data.Channel.Select(c => Library.ValidateTitleChar(c) ? c : '?'));
+            string.Concat(data?.Channel.Select(c => Library.ValidateTitleChar(c) ? c : '?') ?? "");
             questions[2].Input.SetText(artist);
 
             MoveTo(1);
