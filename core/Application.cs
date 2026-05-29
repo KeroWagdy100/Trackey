@@ -215,6 +215,7 @@ class Application
         if (key.KeyChar == '+') Player.IncreaseVolume(5);
         else if (key.KeyChar == '-') Player.DecreaseVolume(5);
         else if (key.Key == ConsoleKey.Spacebar) Player.TogglePause();
+        else if (key.Key == ConsoleKey.M) Player.ToggleMute();
     }
 
     public bool HandleGlobalShortcuts(ConsoleKeyInfo key)

@@ -25,7 +25,7 @@ class AudioPlayer
 
 
 
-    public int Volume => player.Volume;
+    public int Volume => IsMuted ? 0 : player.Volume;
     public PlayerState State =>
         player.State switch
         {
@@ -64,6 +64,9 @@ class AudioPlayer
         if (player.IsPlaying) Pause();
         else Resume();
     }
+
+    public void ToggleMute() => player.ToggleMute();
+    public bool IsMuted => player.Mute;
 
     public void SetVolume(int volume) => player.Volume = Math.Max(Math.Min(volume, 100), 0);
     public void IncreaseVolume(int incBy) => SetVolume(Volume + incBy);

@@ -5,11 +5,41 @@ using YoutubeDLSharp;
 
 class Ui
 {
+    public static string Ellipsis(string s, int mxWidth)
+    {
+        if (s.Length > mxWidth)
+            return $"{s.AsSpan(0, mxWidth)}..";
+        return s;
+    }
+
+    public static string Sanitize(string s, int mxWidth = -1)
+    {
+        s = Markup.Escape(s);
+        if (mxWidth != -1)
+            return Ellipsis(s, mxWidth);
+        return s;
+    }
+
+    public static string BuildProgressBar(double ratio, int width, char unfilledChar = '-', char filledChar = '-', string unfilledColor = "white", string filledColor = "green")
+    {
+        int filled = (int)(ratio * width);
+        string line = 
+        $"[{filledColor}]" 
+        + new string(filledChar, filled) 
+        + $"[/][{unfilledColor}]" 
+        + new string(unfilledChar, width - filled) + "[/]";
+        return line;
+    }
+    
+
+// ---------------------------------------------------------------
+
+    public Layout Layout { get; private set; }
+
     private Panel PlaybackPanel { get; set; }
     private Panel MainPanel { get; set; }
     private Panel QueuePanel { get; set; }
     private Panel DownloadsPanel { get; set; }
-    public Layout Layout { get; private set; }
 
     public Ui()
     {
@@ -54,10 +84,9 @@ class Ui
         Layout["Downloads"].Update(DownloadsPanel);
     }
 
-    private string BuildProgressBar(long currentMs, long totalMs, int width)
+    private string BuildPlaybackBar(long currentMs, long totalMs, int width)
     {
         double ratio = (double)currentMs / totalMs;
-        int filled = (int)(ratio * width);
 
         int currentSecond = (int)currentMs / 1000;
         int currentMinute = currentSecond / 60;
@@ -67,19 +96,14 @@ class Ui
         int totalMinute = totalSecond / 60;
         totalSecond %= 60;
 
-        string line =
-        totalMs == -1 ?
-        new string('-', width)
-        : "[green]" + new string('-', filled) + "[/]" + new string('-', width - filled);
 
         return
-            currentMinute.ToString().PadLeft(2, '0') + ":" + currentSecond.ToString().PadLeft(2, '0')
-            + " "
-            + line
-            + " "
-            + totalMinute.ToString().PadLeft(2, '0') + ":" + totalSecond.ToString().PadLeft(2, '0');
+        currentMinute.ToString().PadLeft(2, '0') + ":" + currentSecond.ToString().PadLeft(2, '0')
+        + " "
+        + BuildProgressBar(ratio, width, '-', '-', "white", "green")
+        + " "
+        + totalMinute.ToString().PadLeft(2, '0') + ":" + totalSecond.ToString().PadLeft(2, '0');
     }
-    
 
     public void UpdatePlaybackPanel(PlaybackInfo info)
     {
@@ -89,16 +113,19 @@ class Ui
         if (!info.PlaybackControlsUnlocked)
             mode = "[gray][[[bold];[/] to unlock]][/]";
 
-        string volume = $"Volume: {info.volume}";
+        string volume = $"🔊 {info.volume,3}";
+        if (info.volume == 0)
+            volume = "🔇" + new string(' ', 4);
+        
 
         string track =
         info.playerState == AudioPlayer.PlayerState.NONE ? "Not Playing anything now"
-        : $"{Markup.Escape(info.currentTrack?.Title ?? "")} | {Markup.Escape(info.currentTrack?.Artist ?? "")}";
+        : $"{Sanitize(info.currentTrack?.Title ?? "", 40)} | {Sanitize(info.currentTrack?.Artist ?? "", 20)}";
 
 
         string title = "[bold]";
         if (!string.IsNullOrEmpty(info.username))
-            title += $"{Markup.Escape(info.username)}";
+            title += Sanitize(info.username);
         else
             title += $"Trackey";
         title += "[/]";
@@ -106,17 +133,18 @@ class Ui
         Columns topColumn = new Columns(
         [
             new Markup(mode).LeftJustified(),
-            new Markup(track).Centered(),
+            new Markup(track).Centered().Ellipsis(),
             new Markup(volume).RightJustified(),
         ]
         ).Expand();
 
-        int progressBarWidth = 50;
-        string progressBar = BuildProgressBar(info.CurrentTimeMs, info.DurationMs, progressBarWidth);
+        // TODO: Make playback bar width dynamic (consider available width in current panel)
+        int playbackBarWidth = 50;
+        string playbackBar = BuildPlaybackBar(info.CurrentTimeMs, info.DurationMs, playbackBarWidth);
 
         var progress = new Align(
             new Markup(
-                progressBar),
+                playbackBar),
             HorizontalAlignment.Center
         );
         Rows rows = new Rows(
@@ -131,7 +159,6 @@ class Ui
         }.BorderColor(currentlyPlaying ? Color.Green : Color.Default);
 
     }
-
 
     public void UpdateMainPanel(Screen currentScreen)
     {
@@ -151,11 +178,14 @@ class Ui
             if (item.Type == QueueItemType.PREVIOUS) lastPrev = item;
             else visible.Add(item);
         }
-        if (lastPrev is not null)
-            visible.Insert(0, lastPrev);
 
         string text = "";
-        foreach (var item in queueItems)
+        if (lastPrev is not null)
+            visible.Insert(0, lastPrev);
+        else
+            text += "\n";
+
+        foreach (var item in visible)
         {
             string color = "white";
             if (item.Type == QueueItemType.PREVIOUS)
@@ -163,10 +193,9 @@ class Ui
             else if (item.Type == QueueItemType.CURRENT)
                 color = "green";
 
-            string title = Markup.Escape(item.Track.Title);
-            // title = (string)title.Select(c => !char.IsAscii(c) ? '?' : c);
+            string title = Sanitize(item.Track.Title, 30);
 
-            text += $"[{color}]{title}[/]";
+            text += $"[{color}]{title}[/]\n";
         }
 
         QueuePanel = new Panel(new Markup(text))
@@ -183,28 +212,16 @@ class Ui
         {
             if (d.State == DownloadState.Success)
             {
-                rows.Add(new Markup($"[green]✓ Downloaded: {Markup.Escape(d.Title)}[/]"));
+                rows.Add(new Markup($"[green]✓ Downloaded: {Sanitize(d.Title)}[/]"));
                 continue;
             }
 
-            string line = "";
-            if (d.Title.Length > 15)
-                line += $"{Markup.Escape(d.Title).AsSpan(0, 15)}..";
-            else
-                line += $"{d.Title}";
+            string line = Sanitize(d.Title, 15);
 
-            float ratio = d.Progress.Progress;
-            int filled = (int)(ratio * width);
+            line += 
+            " " + BuildProgressBar(d.Progress.Progress, width, '░', '█', "gray", "blue")
+            + " " + Math.Round(d.Progress.Progress * 100.0).ToString() + "%";
 
-            line +=
-            " [blue]"
-            + new string('█', filled)
-            + "[/]"
-            + new string('░', width - filled) + " "
-            + Math.Round(d.Progress.Progress * 100.0).ToString() + "%";
-
-
-            
             rows.Add(new Markup(line));
         }
 
