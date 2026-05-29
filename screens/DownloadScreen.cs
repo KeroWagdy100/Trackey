@@ -1,3 +1,4 @@
+using System.Data.Common;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -8,9 +9,9 @@ sealed class DownloadScreen : PromptScreen
     public DownloadScreen(Application app) : base(app)
     {
         Title = "Download Screen";
-        questions.Add(new Question("Paste Download Link", null, DownloadService.ValidateUrlChar));
-        questions.Add(new Question("Title", null, Library.ValidateTitleChar));
-        questions.Add(new Question("Artist", null, Library.ValidateArtistChar));
+        AddQuestion(new Question("Paste Download Link", null, DownloadService.ValidateUrlChar));
+        AddQuestion(new Question("Title", null, Library.ValidateTitleChar));
+        AddQuestion(new Question("Artist", null, Library.ValidateArtistChar));
     }
 
     public override async void HandleInput(ConsoleKeyInfo key)
@@ -18,25 +19,24 @@ sealed class DownloadScreen : PromptScreen
         if (key.Key == ConsoleKey.Enter && currentQuestionIndex == 0)
         {
             var data = await app.Downloader.DownloadMetadataAsync(Answer(0));
-            // if (!string.IsNullOrEmpty(data.Title)
-            // && data.Title.All(c => Library.ValidateTitleChar(c)))
-            //     questions[1].answer = data.Title; 
 
             Logger.Log($"Metadata: {data.Title} - {data.Artist}");
 
-            string title = string.IsNullOrEmpty(data.Title) ? "N/A" : string.Concat(data.Title.Where(c => Library.ValidateTitleChar(c)));
-            questions[1].answer = title;
+            string title = string.IsNullOrEmpty(data.Title) ?
+            "N/A" :
+            string.Concat(data.Title.Select(c => Library.ValidateTitleChar(c) ? c : '?'));
 
-            string artist = string.IsNullOrEmpty(data.Channel) ? "N/A" : string.Concat(data.Channel.Where(c => Library.ValidateTitleChar(c)));
-            questions[2].answer = artist;
+            questions[1].Input.SetText(title);
 
-            // if (!string.IsNullOrEmpty(data.Artist)
-            // && data.Artist.All(c => Library.ValidateArtistChar(c)))
-            //     questions[2].answer = data.Artist; 
-            
+            string artist = string.IsNullOrEmpty(data.Channel) ?
+            "N/A" :
+            string.Concat(data.Channel.Select(c => Library.ValidateTitleChar(c) ? c : '?'));
+            questions[2].Input.SetText(artist);
+
+            MoveTo(1);
         }
-
-        base.HandleInput(key);
+        else
+            base.HandleInput(key);
     }
 
     protected override void OnSubmit()
@@ -45,7 +45,7 @@ sealed class DownloadScreen : PromptScreen
         string title = Answer(1);
         string artist = Answer(2);
         _ = app.AddDownload(url, title, artist);
-        app.NavigateBack();
+        app.NavigateBack(false);
     }
 
     public override IRenderable Render()
@@ -62,12 +62,12 @@ sealed class DownloadScreen : PromptScreen
         {
             var q = questions[i];
 
-            string errors = string.Join("\n", q.errors);
+            string errors = string.Join("\n", q.Errors);
 
-            string prompt = Ui.Sanitize(q.prompt);
+            string prompt = Ui.Sanitize(q.Prompt);
             if (i == currentQuestionIndex)
                 prompt = "[yellow]" + prompt + "[/]";
-            table.AddRow($"{prompt}", $"{Ui.Sanitize(q.answer)}");
+            table.AddRow(new Markup(prompt), q.Input.Render());
         }
 
         return table;

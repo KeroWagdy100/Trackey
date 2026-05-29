@@ -5,8 +5,8 @@ sealed class LoginScreen : PromptScreen
     public LoginScreen(Application app) : base(app)
     {
         Title = "Login Screen";
-        questions.Add(new Question("username", null, UserService.ValidateChar));
-        questions.Add(new Question("password", null, UserService.ValidateChar));
+        AddQuestion(new Question("username", null, UserService.ValidateChar));
+        AddQuestion(new Question("password", null, UserService.ValidateChar));
     }
 
     protected override void OnSubmit()

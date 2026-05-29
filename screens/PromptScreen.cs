@@ -5,19 +5,24 @@ namespace Trackey;
 
 abstract class PromptScreen : Screen
 {
-    public class Question(
-        string prompt,
-        Func<string, ValidationResult>? validator = null,
-        Predicate<char>? isValidChar = null,
-        string answer = "",
-        bool answered = false)
+    public class Question
     {
-        public string prompt = prompt;
-        public string answer = answer;
-        public bool isAnswered = answered;
-        public List<string> errors = [];
-        public Func<string, ValidationResult>? Validator = validator;
-        public Predicate<char>? IsValidChar = isValidChar;
+        public string Prompt;
+        public InputText Input = new();
+        public bool IsAnswered;
+        public List<string> Errors = [];
+        public Func<string, ValidationResult>? Validator;
+        public Predicate<char>? IsValidChar;
+
+        public Question( string prompt, Func<string, ValidationResult>? validator = null, Predicate<char>? isValidChar = null)
+        {
+            Prompt = prompt;
+            Validator = validator;
+            IsValidChar = isValidChar;
+            Input.CharValidator = isValidChar;
+        }
+
+        public string Answer => Input.Text;
     }
 
     protected List<Question> questions;
@@ -27,6 +32,13 @@ abstract class PromptScreen : Screen
     {
         questions = [];
         CapturesTextInput = true;
+    }
+
+    protected void AddQuestion(Question question)
+    {
+        questions.Add(question);
+        if (questions.Count == 1)
+            questions[0].Input.IsActive = true;
     }
 
     public override IRenderable Render()
@@ -44,12 +56,12 @@ abstract class PromptScreen : Screen
         {
             var q = questions[i];
 
-            string errors = string.Join("\n", q.errors);
+            string errors = string.Join("\n", q.Errors);
 
-            string prompt = q.prompt;
+            string prompt = q.Prompt;
             if (i == currentQuestionIndex)
                 prompt = "[yellow]" + prompt + "[/]";
-            table.AddRow($"{prompt}", $"{q.answer}", $"[red]{errors}[/]");
+            table.AddRow(new Markup(prompt), q.Input.Render(), new Markup(errors, new Style(ConsoleColor.Red)));
         }
 
         return table;
@@ -64,44 +76,34 @@ abstract class PromptScreen : Screen
             else
                 MoveToNext();
         }
-        else if (key.Key == ConsoleKey.Backspace)
-        {
-            string answer = questions[currentQuestionIndex].answer;
-            if (string.IsNullOrEmpty(answer))
-                return;
-            answer = answer[..^1];
-            questions[currentQuestionIndex].answer = answer;
-            UpdateValidation();
-        }
         else if (key.Key == ConsoleKey.UpArrow || key.Key == ConsoleKey.Tab && key.Modifiers.HasFlag(ConsoleModifiers.Shift))
             MoveToPrev();
         else if (key.Key == ConsoleKey.DownArrow || key.Key == ConsoleKey.Tab)
             MoveToNext();
         else
         {
-            Question question = questions[currentQuestionIndex];
-
-            if (question.IsValidChar is not null && !question.IsValidChar(key.KeyChar))
-                return;
-
-            question.answer += key.KeyChar;
-            questions[currentQuestionIndex] = question;
+            questions[currentQuestionIndex].Input.HandleInput(key);
             UpdateValidation();
         }
     }
 
     protected abstract void OnSubmit();
-    protected string Answer(int index) => questions[index].answer;
+    protected string Answer(int index) => questions[index].Answer;
 
-    protected void MoveTo(int index) => currentQuestionIndex = index;
-    protected void MoveToNext() => currentQuestionIndex = (currentQuestionIndex + 1) % questions.Count;
-    protected void MoveToPrev() => currentQuestionIndex = (currentQuestionIndex - 1 + questions.Count) % questions.Count;
+    protected void MoveTo(int index)
+    {
+        questions[currentQuestionIndex].Input.IsActive = false;
+        currentQuestionIndex = index;
+        questions[currentQuestionIndex].Input.IsActive = true;
+    }
+    protected void MoveToNext() => MoveTo((currentQuestionIndex + 1) % questions.Count);
+    protected void MoveToPrev() => MoveTo((currentQuestionIndex - 1 + questions.Count) % questions.Count);
 
 
     protected void Reset(int index)
     {
         if (index >= 0 && index < questions.Count)
-            questions[index].answer = "";
+            questions[index].Input.Reset();
     }
 
     protected void Reset()
@@ -110,7 +112,7 @@ abstract class PromptScreen : Screen
             Reset(i);
     }
 
-    protected void ClearErrors(int index) => questions[index].errors.Clear();
+    protected void ClearErrors(int index) => questions[index].Errors.Clear();
 
     protected void ClearErrors()
     {
@@ -119,7 +121,7 @@ abstract class PromptScreen : Screen
 
     }
 
-    protected void AddError(int index, string error) => questions[index].errors.Add(error);
+    protected void AddError(int index, string error) => questions[index].Errors.Add(error);
 
 
 
@@ -130,8 +132,8 @@ abstract class PromptScreen : Screen
             if (q.Validator is null)
                 continue;
 
-            var res = q.Validator(q.answer);
-            q.errors = res.Errors ?? [];
+            var res = q.Validator(q.Answer);
+            q.Errors = res.Errors ?? [];
         }
     }
 }

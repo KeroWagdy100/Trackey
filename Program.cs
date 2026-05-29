@@ -1,7 +1,4 @@
-﻿
-using YoutubeDLSharp;
-
-namespace Trackey;
+﻿namespace Trackey;
 
 class Program
 {

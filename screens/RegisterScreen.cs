@@ -5,8 +5,8 @@ sealed class RegisterScreen : PromptScreen
     public RegisterScreen(Application app) : base(app)
     {
         Title = "Register Screen";
-        questions.Add(new Question("username", app.Users.ValidateUsername, UserService.ValidateChar));
-        questions.Add(new Question("password", app.Users.ValidatePassword, UserService.ValidateChar));
+        AddQuestion(new Question("username", app.Users.ValidateUsername, UserService.ValidateChar));
+        AddQuestion(new Question("password", app.Users.ValidatePassword, UserService.ValidateChar));
     }
 
     protected override void OnSubmit()
@@ -22,9 +22,9 @@ sealed class RegisterScreen : PromptScreen
             for (int i = 0; i < result.Errors?.Count; ++i)
             {
                 if (result.Field == "username")
-                    questions[0].errors.Add(result.Errors[i]);
+                    questions[0].Errors.Add(result.Errors[i]);
                 else
-                    questions[1].errors.Add(result.Errors[i]);
+                    questions[1].Errors.Add(result.Errors[i]);
             }
             Reset();
             return;

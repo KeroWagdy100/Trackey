@@ -61,7 +61,7 @@ class Application
 
     public Application()
     {
-        CurrentScreen = new HomeScreen(this);
+        NavigateTo(new HomeScreen(this), false);
         Player.TrackEnded += OnTrackEnded;
     }
 
@@ -151,24 +151,28 @@ class Application
         if (saveHistory && CurrentScreen != null)
             backScreens.Push(CurrentScreen);
 
+        Logger.Log($"{CurrentScreen?.GetType()} => {nextScreen.GetType()}, {(saveHistory ? "saving" : "not saving")}");
+
         CurrentScreen = nextScreen;
 
         forwardScreens.Clear();
     }
 
-    public void NavigateBack()
+    public void NavigateBack(bool saveHistory = true)
     {
         if (backScreens.Count == 0)
             return;
-        forwardScreens.Push(CurrentScreen);
+        if (saveHistory)
+            forwardScreens.Push(CurrentScreen);
         CurrentScreen = backScreens.Pop();
     }
 
-    public void NavigateForward()
+    public void NavigateForward(bool saveHistory = true)
     {
         if (forwardScreens.Count == 0)
             return;
-        backScreens.Push(CurrentScreen);
+        if (saveHistory)
+            backScreens.Push(CurrentScreen);
         CurrentScreen = forwardScreens.Pop();
     }
 
