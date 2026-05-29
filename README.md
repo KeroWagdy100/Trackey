@@ -1,13 +1,16 @@
-# Trackey
+<a href="/">
+    <img src="./img/logo-darkmode.svg" alt="Trackey logo" title="Trackey" align="right" height="90" />
+</a>
 
+# Trackey
 > A terminal-based music player built for keyboard-first interaction, live playback controls, and a modern console UI experience.
 
-Trackey is a cross-platform console music player written in C#.
+[Trackey](/) is a cross-platform console music player written in C#.
 The project focuses on creating a responsive and visually clean terminal application while exploring application architecture, async programming, and state-driven UI systems.
 
-# Preview
 
-![Screenshot of Home Screen in Trackey](./docs/screenshot.png)
+![trackey-screenshot](./img/screenshot.png)
+
 
 # Features
 
