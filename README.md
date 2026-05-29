@@ -1,5 +1,5 @@
 <a href="/">
-    <img src="./img/logo-darkmode.svg" alt="Trackey logo" title="Trackey" align="right" height="90" />
+    <img src="./img/logo-darkmode.svg" alt="Trackey logo" title="Trackey" align="right" height="60" />
 </a>
 
 # Trackey
