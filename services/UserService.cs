@@ -32,7 +32,7 @@ class UserService
         if (!passwordResult.Success)
             return passwordResult;
 
-        newUser = new() { Id = Guid.NewGuid(), Username = username , Password = password };
+        newUser = new() { Id = Guid.NewGuid(), Username = username, Password = password };
         users.Add(newUser);
 
         _ = SaveUsers();
@@ -126,7 +126,7 @@ class UserService
         return user is not null;
     }
 
-    public bool GetUser(Guid userId, [NotNullWhen(true)] out User? user)
+    public bool TryGetUser(Guid userId, [NotNullWhen(true)] out User? user)
     {
         user = users.Find(u => u.Id == userId);
         return user is not null;

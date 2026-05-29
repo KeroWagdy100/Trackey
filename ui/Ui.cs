@@ -1,8 +1,6 @@
 namespace Trackey;
 
-using System.Runtime.CompilerServices;
 using Spectre.Console;
-using Trackey.models;
 using YoutubeDLSharp;
 
 class Ui

@@ -1,9 +1,4 @@
-using System.Diagnostics;
-using System.Security;
-using System.Threading.Tasks;
-using LibVLCSharp.Shared;
 using Spectre.Console;
-using Trackey.models;
 
 namespace Trackey;
 
@@ -11,31 +6,40 @@ class Application
 {
     public const int TARGET_FPS = 30;
 
+    /* Services */
     public Library Lib { get; } = new();
     public AudioPlayer Player { get; } = new();
     public QueueManager Queue { get; } = new();
     public UserService Users { get; } = new();
     public DownloadService Downloader { get; } = new();
+    // TODO: Create Download Manager that takes care of the download service
 
     /* Application State */
-    public Guid? CurrUserId { get; set; }
-    public Guid? CurrTrackId { get; set; }
-    public bool IsPlaying => Player.IsPlaying;
-    public bool IsRunning { get; set; } = true; // if false, app quits
-    public bool PlaybackControlsUnlocked { get; set; } = false;
-    public List<DownloadTaskInfo> ActiveDownloads = [];
+    public bool IsRunning { get; set; } = true;
 
+    // Current User
+    public Guid? CurrUserId { get; set; }
+    public User? CurrUser =>
+        CurrUserId is Guid id && Users.TryGetUser(id, out User? user) ? user
+        : null;
+    public bool LoggedIn => CurrUserId is not null;
+
+    // Current Track
+    public Guid? CurrTrackId { get; set; }
     public Track? CurrTrack =>
         CurrTrackId is Guid id && Lib.TryGetTrack(id, out var track) ? track
         : null;
+    public bool TrackExists => CurrTrackId is not null;
+    private bool nextTrackRequested = false;
 
-    public User? CurrUser =>
-        CurrUserId is Guid id && Users.GetUser(id, out User? user) ? user
-        : null;
+    public List<DownloadTaskInfo> ActiveDownloads = [];
 
     // Ui
     private Ui ui = new();
     public Screen CurrentScreen { get; set; }
+    public Stack<Screen> backScreens = new();
+    public Stack<Screen> forwardScreens = new();
+    public bool PlaybackControlsUnlocked { get; set; } = false;
 
     public async Task InitializeAsync()
     {
@@ -61,13 +65,6 @@ class Application
         Player.TrackEnded += OnTrackEnded;
     }
 
-    private bool nextTrackRequested = false;
-    public void OnTrackEnded(object? sender, EventArgs eventArgs)
-    {
-        nextTrackRequested = true;
-        Logger.Log("Next Track Requested");
-    }
-
     public void Run()
     {
         AnsiConsole.Live(ui.Layout)
@@ -78,30 +75,11 @@ class Application
             {
                 if (Console.KeyAvailable)
                 {
-                    ConsoleKeyInfo key;
-                    key = Console.ReadKey(true);
+                    ConsoleKeyInfo key = Console.ReadKey(true);
                     HandleKey(key);
                 }
 
-                ui.Update(CurrentScreen,
-                    new PlaybackInfo(
-                        Player.State,
-                        Player.Volume,
-                        CurrTrack,
-                        CurrUser?.Username,
-                        PlaybackControlsUnlocked,
-                        Player.TimeMs,
-                        Player.DurationMs
-                        ),
-                        GetQueueItems(),
-                        ActiveDownloads
-                    );
-
-                UpdateActiveDownloads();
-                UpdateQueue();
-
-                if (CurrTrack is null)
-                    OnTrackEnded(null, new());
+                Update();
 
                 ctx.Refresh();
                 Thread.Sleep(1000 / TARGET_FPS);
@@ -110,16 +88,50 @@ class Application
         });
     }
 
+// --------------------------------------------------
+
+    public void Update()
+    {
+        if (!TrackExists)
+            OnTrackEnded(null, new());
+        UpdateQueue();
+
+        UpdateActiveDownloads();
+
+        ui.Update(CurrentScreen,
+            new PlaybackInfo(
+                Player.State,
+                Player.Volume,
+                CurrTrack,
+                CurrUser?.Username,
+                PlaybackControlsUnlocked,
+                Player.TimeMs,
+                Player.DurationMs
+                ),
+            GetQueueItems(),
+            ActiveDownloads
+        );
+    }
+
     public void UpdateQueue()
     {
-        if (!nextTrackRequested)
+        if (!nextTrackRequested || Queue.IsEmpty)
             return;
-        if (!Queue.IsEmpty)
-        {
-            nextTrackRequested = false;
-            SetCurrentTrack(Queue.Next());
-            Logger.Log("Next Track Invoked");
-        }
+
+        nextTrackRequested = false;
+        SetCurrentTrack(Queue.Next());
+
+        Logger.Log("Next Track Invoked");
+    }
+
+    // Removes Active Downloads Completed before 4 seconds or more
+    public void UpdateActiveDownloads()
+    {
+        var now = DateTime.Now;
+        ActiveDownloads.RemoveAll(
+        t => t.CompletedAt is DateTime completed
+        && (now - completed).TotalSeconds >= 4
+        );
     }
 
     public IEnumerable<QueueItem> GetQueueItems()
@@ -132,8 +144,8 @@ class Application
         }
     }
 
-    public Stack<Screen> backScreens = new();
-    public Stack<Screen> forwardScreens = new();
+
+    // Screen Navigators
     public void NavigateTo(Screen nextScreen, bool saveHistory)
     {
         if (saveHistory && CurrentScreen != null)
@@ -160,6 +172,8 @@ class Application
         CurrentScreen = forwardScreens.Pop();
     }
 
+
+    // Key Handlers
     public void HandleKey(ConsoleKeyInfo key)
     {
         /*
@@ -203,7 +217,6 @@ class Application
         else if (key.Key == ConsoleKey.Spacebar) Player.TogglePause();
     }
 
-
     public bool HandleGlobalShortcuts(ConsoleKeyInfo key)
     {
         bool ctrl = key.Modifiers.HasFlag(ConsoleModifiers.Control);
@@ -234,32 +247,7 @@ class Application
         return true;
     }
 
-    public bool HandleAllShortcuts(ConsoleKeyInfo key)
-    {
-        if (HandleGlobalShortcuts(key))
-            return true;
-
-        if (key.KeyChar == 'Q') Quit();
-        else if (key.KeyChar == '+') Player.IncreaseVolume(5);
-        else if (key.KeyChar == '-') Player.DecreaseVolume(5);
-        else if (key.Key == ConsoleKey.Spacebar) Player.TogglePause();
-
-        else if (key.Key == ConsoleKey.RightArrow)
-        {
-            if (!Queue.IsEmpty)
-                SetCurrentTrack(Queue.Next());
-        }
-        else if (key.Key == ConsoleKey.LeftArrow)
-        {
-            if (!Queue.IsEmpty)
-                SetCurrentTrack(Queue.Prev());
-        }
-        else
-            return false;
-
-        return true;
-    }
-
+    // Mutating State
     public void SetCurrentUser(Guid? userId)
     {
         CurrUserId = userId;
@@ -275,7 +263,8 @@ class Application
     public async Task AddDownload(string url)
     {
         var data = await Downloader.DownloadMetadataAsync(url);
-        var taskInfo = new DownloadTaskInfo() {
+        var taskInfo = new DownloadTaskInfo()
+        {
             Id = Guid.NewGuid(),
             Title = data.Title,
             Url = url,
@@ -291,12 +280,12 @@ class Application
 
         var track = new Track()
         {
-            Id           = Guid.NewGuid(),
-            OwnerUserId  = CurrUserId!.Value,
-            Title        = taskInfo.Title,
-            Artist       = taskInfo.Artist,
-            SourceUrl    = taskInfo.Url,  
-            Filepath     = taskInfo.FilePath!,
+            Id = Guid.NewGuid(),
+            OwnerUserId = CurrUserId!.Value,
+            Title = taskInfo.Title,
+            Artist = taskInfo.Artist,
+            SourceUrl = taskInfo.Url,
+            Filepath = taskInfo.FilePath!,
             DownloadedAt = taskInfo.CompletedAt.Value
         };
 
@@ -304,16 +293,12 @@ class Application
         Queue.AddTrack(track.Id);
     }
 
-    public void UpdateActiveDownloads()
+    // Event Handlers
+    public void OnTrackEnded(object? sender, EventArgs eventArgs)
     {
-        var now = DateTime.Now;
-        ActiveDownloads.RemoveAll(
-        t => t.CompletedAt is DateTime completed
-        && (now - completed).TotalSeconds >= 4
-        );
+        nextTrackRequested = true;
+        Logger.Log("Next Track Requested");
     }
-
-    public void RemoveActiveDownload(Guid taskId) => ActiveDownloads.RemoveAll(t => t.Id == taskId);
 
     private void Quit() => IsRunning = false;
 }

@@ -1,5 +1,5 @@
 using YoutubeDLSharp;
-namespace Trackey.models;
+namespace Trackey;
 
 
 class DownloadTaskInfo
