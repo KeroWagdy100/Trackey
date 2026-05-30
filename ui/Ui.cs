@@ -1,6 +1,7 @@
 namespace Trackey;
 
 using Spectre.Console;
+using Spectre.Console.Rendering;
 using YoutubeDLSharp;
 
 class Ui
@@ -80,7 +81,7 @@ class Ui
 
         Layout = new Layout("Root").SplitRows(
             new Layout("MainRow"),
-            new Layout("Playback").Size(4)
+            new Layout("Playback").Size(5)
         );
 
         Layout["MainRow"].SplitColumns(
@@ -145,10 +146,17 @@ class Ui
             title += $"Trackey";
         title += "[/]";
 
-        Columns topColumn = new Columns(
+        Columns trackColumn = new Columns(
+        [
+            // new Markup(mode).LeftJustified(),
+            new Markup(track).Centered().Ellipsis(),
+            // new Markup(volume).RightJustified(),
+        ]
+        ).Expand();
+
+        Columns secondColumn = new Columns(
         [
             new Markup(mode).LeftJustified(),
-            new Markup(track).Centered().Ellipsis(),
             new Markup(volume).RightJustified(),
         ]
         ).Expand();
@@ -163,7 +171,8 @@ class Ui
             HorizontalAlignment.Center
         );
         Rows rows = new Rows(
-            topColumn,
+            trackColumn,
+            secondColumn,
             progress
         ).Expand();
 
@@ -194,11 +203,11 @@ class Ui
             else visible.Add(item);
         }
 
-        string text = "";
+        List<Renderable> markups = [];
         if (lastPrev is not null)
             visible.Insert(0, lastPrev);
         else
-            text += "\n";
+            markups.Add(new Markup("\n"));
 
         foreach (var item in visible)
         {
@@ -210,10 +219,11 @@ class Ui
 
             string title = Sanitize(item.Track.Title, 30);
 
-            text += $"[{color}]{title}[/]\n";
+            string text = $"[{color}]{(item.Type == QueueItemType.CURRENT ? "⇨ " : "")}{title}[/]\n";
+            markups.Add(new Markup(text).Crop());
         }
 
-        QueuePanel = new Panel(new Markup(text))
+        QueuePanel = new Panel(new Rows(markups))
         {
             Header = new("Queue", Justify.Center),
             Expand = true

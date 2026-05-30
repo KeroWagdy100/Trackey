@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -73,11 +74,15 @@ class InputText
     {
         if (CursorIndex == chars.Count) return;
         ++CursorIndex;
+        ShowCursor = true;
+        lastToggled = DateTime.Now;
     }
     public void MoveLeft()
     {
         if (CursorIndex == 0) return;
         --CursorIndex;
+        ShowCursor = true;
+        lastToggled = DateTime.Now;
     }
 
     // 𝖨

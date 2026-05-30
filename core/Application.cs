@@ -155,7 +155,7 @@ class Application
 
         CurrentScreen = nextScreen;
 
-        forwardScreens.Clear();
+        ClearForwardScreens();
     }
 
     public void NavigateBack(bool saveHistory = true)
@@ -175,6 +175,9 @@ class Application
             backScreens.Push(CurrentScreen);
         CurrentScreen = forwardScreens.Pop();
     }
+
+    public void ClearBackScreens() => backScreens.Clear();
+    public void ClearForwardScreens() => forwardScreens.Clear();
 
 
     // Key Handlers
@@ -227,10 +230,6 @@ class Application
         bool ctrl = key.Modifiers.HasFlag(ConsoleModifiers.Control);
 
         if (ctrl && key.Key == ConsoleKey.Q) Quit();
-        else if (key.Key == ConsoleKey.Escape)
-        {
-            // Cancel Current Operation
-        }
 
         else if (key.KeyChar == '}')
         {

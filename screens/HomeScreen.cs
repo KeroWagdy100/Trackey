@@ -5,9 +5,9 @@ sealed class HomeScreen : TableScreen
     public override void Execute(int index)
     {
         if (options[index] == "Login")
-            app.NavigateTo(new LoginScreen(app), false);
+            app.NavigateTo(new LoginScreen(app), true);
         else if (options[index] == "Register")
-            app.NavigateTo(new RegisterScreen(app), false);
+            app.NavigateTo(new RegisterScreen(app), true);
         else if (options[index] == "Download")
             app.NavigateTo(new DownloadScreen(app), true);
         else if (options[index] == "Logout")

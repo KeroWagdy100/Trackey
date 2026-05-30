@@ -1,5 +1,5 @@
-<a href="/">
-    <img src="./img/logo-darkmode.svg" alt="Trackey logo" title="Trackey" align="right" height="60" />
+<a href="./img/logo-darkmode-transparent.svg">
+    <img src="./img/logo-darkmode-transparent.svg" alt="Trackey logo" title="Trackey" align="right" height="70" />
 </a>
 
 # Trackey
@@ -9,7 +9,7 @@
 The project focuses on creating a responsive and visually clean terminal application while exploring application architecture, async programming, and state-driven UI systems.
 
 
-![trackey-screenshot](./img/screenshot.png)
+![trackey-screenshot](./img/2026-05-30_13-01.png)
 
 
 # Features

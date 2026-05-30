@@ -80,6 +80,8 @@ abstract class PromptScreen : Screen
             MoveToPrev();
         else if (key.Key == ConsoleKey.DownArrow || key.Key == ConsoleKey.Tab)
             MoveToNext();
+        else if (key.Key == ConsoleKey.Escape)
+            app.NavigateBack();
         else
         {
             questions[currentQuestionIndex].Input.HandleInput(key);

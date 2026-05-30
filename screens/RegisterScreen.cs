@@ -31,6 +31,7 @@ sealed class RegisterScreen : PromptScreen
         }
 
         app.SetCurrentUser(user!.Id);
+        app.ClearBackScreens();
         app.NavigateTo(new HomeScreen(app), false);
     }
 }
