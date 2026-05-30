@@ -15,6 +15,10 @@ sealed class HomeScreen : MenuScreen
             app.SetCurrentUser(null);
             app.NavigateTo(new HomeScreen(app), false);
         }
+        else if (options[index] == "Library")
+        {
+            app.NavigateTo(new PlaylistView(app, app.Lib.FullLibraryPlaylistId), true);
+        }
     }
 
     public HomeScreen(Application app) : base(app)
@@ -32,5 +36,7 @@ sealed class HomeScreen : MenuScreen
             options.Add("Download");
             options.Add("Logout");
         }
+
+        options.Add("Library");
     }
 }

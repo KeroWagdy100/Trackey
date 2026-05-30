@@ -15,7 +15,8 @@ class Library
     public static Predicate<char> ValidateTitleChar = c => char.IsAsciiLetterOrDigit(c) || "!@#$%^&*()[] ".Contains(c);
     public static Predicate<char> ValidateArtistChar = c => char.IsAsciiLetterOrDigit(c) || "!@#$%^&*()[] ".Contains(c);
 
-    public List<Guid> AllTracksIds => Tracks.Keys.ToList();
+    private List<Guid> AllTracksIds => Tracks.Keys.ToList();
+    public Guid FullLibraryPlaylistId {get; private set;}
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -30,10 +31,24 @@ class Library
         return true;
     }
 
+    public bool TryGetPlaylist(Guid playlistId, [NotNullWhen(true)] out Playlist? playlist)
+    {
+        if (!Playlists.TryGetValue(playlistId, out playlist))
+            return false;
+        return true;
+    }
+
     public Track? UpdateTrack(Guid trackId, Track track)
     {
         if (Tracks.ContainsKey(trackId))
             return Tracks[trackId] = track;
+        else return null;
+    }
+
+    public Playlist? UpdatePlaylist(Guid playlistId,  Playlist playlist)
+    {
+        if (Playlists.ContainsKey(playlistId))
+            return Playlists[playlistId] = playlist;
         else return null;
     }
 
@@ -55,6 +70,16 @@ class Library
 
             Tracks = data.Tracks.ToDictionary(t => t.Id);
             Playlists = data.Playlists.ToDictionary(p => p.Id);
+
+
+            var fullLib =  new Playlist()
+            {
+                Id = Guid.NewGuid(),
+                TrackIds = AllTracksIds,
+                Title = "Full Library"
+            };
+            await AddPlaylist(fullLib);
+            FullLibraryPlaylistId = fullLib.Id;
 
             Logger.Log($"Loaded Library Successfully");
             return true;

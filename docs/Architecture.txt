@@ -44,3 +44,18 @@ MVP - Required:
 5. playlists
 6. persistent library
 7. basic download
+
+=== Screen Hierarchy ===
+Screen (scrollable)
+├── MenuScreen (select one)
+│   └── HomeScreen
+│
+├── PromptScreen (answer questions)
+│   ├── LoginScreen
+│   ├── RegisterScreen
+│   └── DownloadScreen
+│
+└── TableViewScreen (browse/select items)
+    ├── LibraryScreen
+    ├── PlaylistScreen
+    └── AddToPlaylistScreen

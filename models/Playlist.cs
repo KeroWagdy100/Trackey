@@ -6,7 +6,7 @@ class Playlist
 {
     public Guid Id { get; set; }
     public Guid OwnerUserId { get; set; }
-    public List<Guid> TrackIds { get; private set; } = [];
+    public List<Guid> TrackIds { get; set; } = [];
 
     public string Title { get; set; } = "";
 

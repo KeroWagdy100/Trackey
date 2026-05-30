@@ -74,32 +74,40 @@ abstract class PromptScreen : Screen
             if (currentQuestionIndex == questions.Count - 1)
                 OnSubmit();
             else
-                MoveToNext();
+                MoveDown();
         }
-        else if (key.Key == ConsoleKey.UpArrow || key.Key == ConsoleKey.Tab && key.Modifiers.HasFlag(ConsoleModifiers.Shift))
-            MoveToPrev();
-        else if (key.Key == ConsoleKey.DownArrow || key.Key == ConsoleKey.Tab)
-            MoveToNext();
         else if (key.Key == ConsoleKey.Escape)
             app.NavigateBack();
-        else
+        else if (char.IsAscii(key.KeyChar))
         {
             questions[currentQuestionIndex].Input.HandleInput(key);
             UpdateValidation();
         }
+        else 
+            base.HandleInput(key);
     }
 
     protected abstract void OnSubmit();
     protected string Answer(int index) => questions[index].Answer;
 
-    protected void MoveTo(int index)
+    public override void MoveTo(int index)
     {
         questions[currentQuestionIndex].Input.IsActive = false;
-        currentQuestionIndex = index;
+        base.MoveTo(index);
         questions[currentQuestionIndex].Input.IsActive = true;
     }
-    protected void MoveToNext() => MoveTo((currentQuestionIndex + 1) % questions.Count);
-    protected void MoveToPrev() => MoveTo((currentQuestionIndex - 1 + questions.Count) % questions.Count);
+    public override void MoveUp()
+    {
+        questions[currentQuestionIndex].Input.IsActive = false;
+        base.MoveUp();
+        questions[currentQuestionIndex].Input.IsActive = true;
+    }
+    public override void MoveDown()
+    {
+        questions[currentQuestionIndex].Input.IsActive = false;
+        base.MoveDown();
+        questions[currentQuestionIndex].Input.IsActive = true;
+    }
 
 
     protected void Reset(int index)
@@ -138,4 +146,7 @@ abstract class PromptScreen : Screen
             q.Errors = res.Errors ?? [];
         }
     }
+
+    public override int OptionsCount() => questions.Count;
+
 }

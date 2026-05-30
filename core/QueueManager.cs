@@ -12,7 +12,11 @@ class QueueManager
         Tracks = [];
     }
 
-    public void AddTrack(Guid trackId) => Tracks.Add(trackId);
+    public void AddTrack(Guid trackId) {
+        if (!Tracks.Contains(trackId))
+            Tracks.Add(trackId);
+    }
+
     public void AddPlaylist(Playlist playlist)
     {
         foreach (Guid trackId in playlist.TrackIds)

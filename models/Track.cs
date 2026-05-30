@@ -1,6 +1,8 @@
+using Spectre.Console;
+
 namespace Trackey;
 
-class Track
+class Track : ITableRow
 {
     public Guid Id { get; set; }
     public Guid OwnerUserId { get; set; }
@@ -11,4 +13,10 @@ class Track
     public string Filepath { get; set; } = "";
 
     public DateTime DownloadedAt { get; set; }
+
+
+    public static List<string> Headers() => ["Title", "Artist"];
+    public List<string> Cells() => [Title, Artist];
+
+    // TODO: Add track duration
 }

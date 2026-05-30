@@ -10,8 +10,21 @@ abstract class Screen
         this.app = app;
     }
 
+    protected int hoveredIndex = 0;
     public abstract IRenderable Render();
-    public abstract void HandleInput(ConsoleKeyInfo key);
+    public virtual void HandleInput(ConsoleKeyInfo key)
+    {
+        if (key.Key == ConsoleKey.UpArrow || key.Key == ConsoleKey.Tab && key.Modifiers.HasFlag(ConsoleModifiers.Shift))
+            MoveUp();
+        else if (key.Key == ConsoleKey.DownArrow || key.Key == ConsoleKey.Tab)
+            MoveDown();
+    }
+
+    public abstract int OptionsCount();
+    public virtual void MoveTo(int index) => hoveredIndex = index < OptionsCount() && index >= 0 ? index : hoveredIndex;
+    public virtual void MoveUp() => hoveredIndex = (hoveredIndex - 1 + OptionsCount()) % OptionsCount();
+    public virtual void MoveDown() => hoveredIndex = (hoveredIndex + 1) % OptionsCount();
+
     public bool CapturesTextInput { get; protected set; } = false;
     public string Title { get; protected set; } = "";
 }

@@ -47,9 +47,10 @@ class Application
         await Lib.LoadLibrary();
 
         // Adds all tracks in library directly to queue
-        var allTracks = Lib.AllTracksIds;
-        foreach (var id in allTracks)
-            Queue.AddTrack(id);
+
+        // var allTracks = Lib.AllTracksIds;
+        // foreach (var id in allTracks)
+        //     Queue.AddTrack(id);
     }
 
     public async Task FinalizeAsync()
