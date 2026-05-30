@@ -3,9 +3,9 @@ namespace Trackey;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
-abstract class TableScreen : Screen
+abstract class MenuScreen : Screen
 {
-    protected TableScreen(Application app) : base(app)
+    protected MenuScreen(Application app) : base(app)
     {
     }
     protected List<string> options = [];
@@ -17,13 +17,28 @@ abstract class TableScreen : Screen
 
     public override IRenderable Render()
     {
-        Table table = new Table().AddColumn("").Border(TableBorder.None).HideHeaders();
-        for (int i = 0; i < options.Count; ++i)
+        var rows = new Rows(
+        options.Select((option, i) =>
         {
-            string style = hoveredIndex == i ? "yellow" : IsSelected(i) ? "red" : "gray";
-            table.AddRow($"[{style}]{options[i]}[/]");
-        }
-        return table;
+            string style =
+                hoveredIndex == i ? "yellow" :
+                IsSelected(i) ? "blue" :
+                "white";
+            Color color = 
+                hoveredIndex == i ? Color.Yellow :
+                IsSelected(i) ? Color.Blue :
+                Color.White;
+
+            return new Panel($"[{style}]{option}[/]")
+                .Border(BoxBorder.Square).BorderColor(color);
+        })
+        );
+
+        return new Align(
+            rows,
+            HorizontalAlignment.Left
+            // VerticalAlignment.Middle
+        );
     }
 
     public abstract void Execute(int index);

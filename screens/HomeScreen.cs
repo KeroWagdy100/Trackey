@@ -1,6 +1,6 @@
 namespace Trackey;
 
-sealed class HomeScreen : TableScreen
+sealed class HomeScreen : MenuScreen
 {
     public override void Execute(int index)
     {

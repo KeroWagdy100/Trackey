@@ -190,7 +190,7 @@ class Ui
         {
             Header = new(currentScreen.Title, Justify.Center),
             Expand = true
-        }.BorderColor(Color.Yellow);
+        }.BorderColor(Color.White);
     }
 
     public void UpdateQueuePanel(IEnumerable<QueueItem> queueItems)

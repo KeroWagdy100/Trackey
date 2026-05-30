@@ -1,11 +1,12 @@
-<a href="./img/logo-darkmode-transparent.svg">
-    <img src="./img/logo-darkmode-transparent.svg" alt="Trackey logo" title="Trackey" align="right" height="70" />
-</a>
+<!-- <a href="">
+    <img src="./img/Trackey-Banner.svg" alt="Trackey logo" title="Trackey" align="right" height="70" />
+</a> -->
+[![Trackey Banner](./img/Trackey-Banner.svg)](https://www.github.com/KeroWagdy100/Trackey)
 
-# Trackey
+<!-- # Trackey -->
 > A terminal-based music player built for keyboard-first interaction, live playback controls, and a modern console UI experience.
 
-[Trackey](/) is a cross-platform console music player written in C#.
+[Trackey](https://www.github.com/KeroWagdy100/Trackey) is a cross-platform console music player written in C#.
 The project focuses on creating a responsive and visually clean terminal application while exploring application architecture, async programming, and state-driven UI systems.
 
 
