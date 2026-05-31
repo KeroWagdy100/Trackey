@@ -36,7 +36,8 @@ class Application
 
     // Ui
     private Ui ui = new();
-    public Screen CurrentScreen { get; set; }
+    public Screen CurrentScreen { get; set; } = null!;
+    public Prompt? ActivePrompt { get; set; } = null;
     public Stack<Screen> backScreens = new();
     public Stack<Screen> forwardScreens = new();
     public bool PlaybackControlsUnlocked { get; set; } = false;
@@ -89,11 +90,11 @@ class Application
         });
     }
 
-// --------------------------------------------------
+    // --------------------------------------------------
 
     public void Update()
     {
-        if (!TrackExists)
+        if (!TrackExists && !Queue.IsEmpty)
             OnTrackEnded(null, new());
         UpdateQueue();
 
@@ -110,7 +111,8 @@ class Application
                 Player.DurationMs
                 ),
             GetQueueItems(),
-            ActiveDownloads
+            ActiveDownloads,
+            ActivePrompt
         );
     }
 
@@ -124,6 +126,21 @@ class Application
 
         Logger.Log("Next Track Invoked");
     }
+
+    public void PlayTrackNow(Guid trackId)
+    {
+        if (CurrTrackId == trackId)
+            SetCurrentTrack(trackId);
+        else
+        {
+            Queue.PlayNext(trackId);
+            SetCurrentTrack(Queue.Next());
+        }
+    }
+
+
+    public void SetActivePrompt(Prompt prompt) => ActivePrompt = prompt;
+    public void RemoveActivePrompt() => ActivePrompt = null;
 
     // Removes Active Downloads Completed before 4 seconds or more
     public void UpdateActiveDownloads()
@@ -184,23 +201,6 @@ class Application
     // Key Handlers
     public void HandleKey(ConsoleKeyInfo key)
     {
-        /*
-        Global shortcuts (Always working): 
-        - Ctrl+Q ==> Quit App
-        - Escape ==> Cancel
-        - char'<' ==> Navigate to previous screen (to be implemented soon) 
-        - char'>' ==> Navigate to next screen (to be implemented soon) 
-        - char'{' ==> Queue Previous 
-        - char'}' ==> Queue Next
-        Playback controls (locked/unlocked using ';'): 
-        - char '+'/'-' ==> increase/decrease volume 
-        - Space ==> Toggle Pause
-        */
-        Logger.Log(
-            $"Key={key.Key}, Char={key.KeyChar}, Mods={key.Modifiers}"
-        );
-
-
         if (key.KeyChar == ';')
         {
             TogglePlaybackControls();
@@ -212,6 +212,8 @@ class Application
 
         if (PlaybackControlsUnlocked)
             HandlePlaybackShortcuts(key);
+        else if (ActivePrompt is not null)
+            ActivePrompt.HandleInput(key);
         else
             CurrentScreen.HandleInput(key);
     }
@@ -294,7 +296,18 @@ class Application
         };
 
         await Lib.AddTrack(track);
-        Queue.AddTrack(track.Id);
+        Queue.Enqueue(track.Id);
+    }
+
+    public async void CreatePlaylist(string playlistTitle)
+    {
+        var playlist = new Playlist() {
+        Title = playlistTitle,
+        Id = Guid.NewGuid(),
+        OwnerUserId = CurrUserId is not null ? CurrUserId.Value : new Guid()
+        };
+
+        await Lib.AddPlaylist(playlist);
     }
 
     // Event Handlers

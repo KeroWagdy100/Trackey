@@ -4,44 +4,59 @@ namespace Trackey;
 
 class QueueManager
 {
-    public List<Guid> Tracks { get; private set; }
+    public List<Guid> TracksIds { get; private set; }
     private int curr = -1;
 
     public QueueManager()
     {
-        Tracks = [];
+        TracksIds = [];
     }
 
-    public void AddTrack(Guid trackId) {
-        if (!Tracks.Contains(trackId))
-            Tracks.Add(trackId);
+    public void Enqueue(Guid trackId)
+    {
+        // TracksIds.RemoveAll(tId => tId == trackId);
+        TracksIds.Add(trackId);
     }
 
-    public void AddPlaylist(Playlist playlist)
+
+    public void Enqueue(Playlist playlist)
     {
         foreach (Guid trackId in playlist.TrackIds)
-            Tracks.Add(trackId);
+            TracksIds.Add(trackId);
     }
 
-    public bool IsEmpty => Tracks.Count == 0;
+    public void PlayNext(Guid trackId)
+    {
+        // TracksIds.Remove(tId => tId == trackId);
+        TracksIds.Insert(curr+1, trackId);
+    }
+
+    public bool IsEmpty => TracksIds.Count == 0;
+
+    public Guid? Current => curr == -1 ? null : TracksIds[curr];
+
     public Guid Next()
     {
-        curr = (curr + 1) % Tracks.Count;
-        return Tracks[curr];
+        if (TracksIds.Count == 0)
+            throw new InvalidOperationException("Queue is empty");
+        curr = (curr + 1) % TracksIds.Count;
+        return TracksIds[curr];
     }
 
     public Guid Prev()
     {
-        curr = (curr - 1 + Tracks.Count) % Tracks.Count;
-        return Tracks[curr];
+        if (TracksIds.Count == 0)
+            throw new InvalidOperationException("Queue is empty");
+        curr = (curr - 1 + TracksIds.Count) % TracksIds.Count;
+        return TracksIds[curr];
     }
 
     public IEnumerable<QueueItem> QueueItems()
     {
-        for (int i = 0; i < Tracks.Count; ++i)
+        for (int i = 0; i < TracksIds.Count; ++i)
         {
             yield return new QueueItem(
-                new Track() {Id = Tracks[i]}, 
+                new Track() { Id = TracksIds[i] },
                 i < curr ? QueueItemType.PREVIOUS :
                 i == curr ? QueueItemType.CURRENT :
                 QueueItemType.NEXT

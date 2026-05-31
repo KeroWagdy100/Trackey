@@ -14,9 +14,13 @@ abstract class Screen
     public abstract IRenderable Render();
     public virtual void HandleInput(ConsoleKeyInfo key)
     {
-        if (key.Key == ConsoleKey.UpArrow || key.Key == ConsoleKey.Tab && key.Modifiers.HasFlag(ConsoleModifiers.Shift))
+        if (key.Key == ConsoleKey.UpArrow
+        || key.Key == ConsoleKey.Tab && key.Modifiers.HasFlag(ConsoleModifiers.Shift)
+        || key.Key == ConsoleKey.K && !CapturesTextInput)
             MoveUp();
-        else if (key.Key == ConsoleKey.DownArrow || key.Key == ConsoleKey.Tab)
+        else if (key.Key == ConsoleKey.DownArrow
+        || key.Key == ConsoleKey.Tab
+        || key.Key == ConsoleKey.J && !CapturesTextInput)
             MoveDown();
     }
 
@@ -26,5 +30,5 @@ abstract class Screen
     public virtual void MoveDown() => hoveredIndex = (hoveredIndex + 1) % OptionsCount();
 
     public bool CapturesTextInput { get; protected set; } = false;
-    public string Title { get; protected set; } = "";
+    public string Title { get; set; } = "";
 }

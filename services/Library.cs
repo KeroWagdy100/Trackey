@@ -15,14 +15,36 @@ class Library
     public static Predicate<char> ValidateTitleChar = c => char.IsAsciiLetterOrDigit(c) || "!@#$%^&*()[] ".Contains(c);
     public static Predicate<char> ValidateArtistChar = c => char.IsAsciiLetterOrDigit(c) || "!@#$%^&*()[] ".Contains(c);
 
-    private List<Guid> AllTracksIds => Tracks.Keys.ToList();
-    public Guid FullLibraryPlaylistId {get; private set;}
+    public IEnumerable<Guid> AllTracksIds => Tracks.Keys.ToList();
+    public IEnumerable<Track> AllTracks => Tracks.Values.ToList();
+
+    public IEnumerable<Guid> AllPlaylistsIds => Playlists.Keys.ToList();
+    public IEnumerable<Playlist> AllPlaylists => Playlists.Values.ToList();
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         WriteIndented = true,
         PropertyNameCaseInsensitive = true
     };
+
+    public async void AddTracksToPlaylist(Guid playlistId, IEnumerable<Guid> tracksIds)
+    {
+        if (!TryGetPlaylist(playlistId, out var playlist))
+            throw new ArgumentException($"Playlist with {playlistId} not found");
+
+        foreach (var trackId in tracksIds)
+            if (!playlist.TrackIds.Contains(trackId))
+                playlist.AddTrack(trackId);
+        await SaveLibrary();
+    }
+
+    public async void RenamePlaylist(Guid playlistId, string newTitle)
+    {
+        if (!TryGetPlaylist(playlistId, out var playlist))
+            throw new ArgumentException($"Playlist with {playlistId} not found");
+        playlist.Title = newTitle;
+        await SaveLibrary();
+    }
 
     public bool TryGetTrack(Guid trackId, [NotNullWhen(true)] out Track? track)
     {
@@ -71,15 +93,6 @@ class Library
             Tracks = data.Tracks.ToDictionary(t => t.Id);
             Playlists = data.Playlists.ToDictionary(p => p.Id);
 
-
-            var fullLib =  new Playlist()
-            {
-                Id = Guid.NewGuid(),
-                TrackIds = AllTracksIds,
-                Title = "Full Library"
-            };
-            await AddPlaylist(fullLib);
-            FullLibraryPlaylistId = fullLib.Id;
 
             Logger.Log($"Loaded Library Successfully");
             return true;

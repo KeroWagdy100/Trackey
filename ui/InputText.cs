@@ -13,6 +13,10 @@ class InputText
     public string Text => new([.. chars]);
     public Predicate<char>? CharValidator;
 
+    // TODO: Make these required
+    public Action<string>? OnSubmit {get; init;}
+    public Action? OnCancel {get; init;}
+
     public bool IsActive {get; set;} = false;
     public bool ShowCursor {get; private set;} = false;
 
@@ -34,7 +38,11 @@ class InputText
 
     public void HandleInput(ConsoleKeyInfo key)
     {
-        if (key.Key == ConsoleKey.Backspace) // delete single char
+        if (key.Key == ConsoleKey.Enter && OnSubmit is not null)
+            OnSubmit(Text);
+        else if (key.Key == ConsoleKey.Escape && OnCancel is not null)
+            OnCancel();
+        else if (key.Key == ConsoleKey.Backspace) // delete single char
         {
             if (CursorIndex > 0)
                 chars.RemoveAt(--CursorIndex);
@@ -88,6 +96,13 @@ class InputText
     // 𝖨
     public Renderable Render()
     {
+
+
+        return new Markup(RenderedText());
+    }
+
+    public string RenderedText()
+    {
         if (IsActive)
         {
             var now = DateTime.Now;
@@ -104,13 +119,15 @@ class InputText
             string c = Ui.Sanitize(new string(chars[i], 1));
 
             if (IsActive && ShowCursor && i == CursorIndex)
+            {
+                Logger.Log("Cursor shown");
                 text += $"[black on white]{c}[/]";
+            }
             else
                 text += c;
         }
         if (IsActive && ShowCursor && CursorIndex == chars.Count)
-        text += "[black on white] [/]";
-
-        return new Markup(text);
+            text += "[black on white] [/]";
+        return text;
     }
 }

@@ -41,6 +41,7 @@ class Ui
     private Panel MainPanel { get; set; }
     private Panel QueuePanel { get; set; }
     private Panel DownloadsPanel { get; set; }
+    private Panel ActivePromptPanel { get; set; }
 
     public Ui()
     {
@@ -68,6 +69,13 @@ class Ui
             Expand = true
         };
 
+        ActivePromptPanel = new("")
+        {
+            Header = new PanelHeader("", Justify.Center),
+            Expand = true,
+            Border = BoxBorder.None
+        };
+
         // Layout = new Layout("Root").SplitColumns(
         //     new Layout("MainCol").Ratio(3),
         //     new Layout("Queue").Ratio(1)
@@ -91,6 +99,7 @@ class Ui
 
         Layout["MainWindow"].SplitRows(
             new Layout("Main"),
+            new Layout("ActivePrompt").Size(3),
             new Layout("Downloads").Size(4)
         );
 
@@ -98,6 +107,7 @@ class Ui
         Layout["Main"].Update(MainPanel);
         Layout["Queue"].Update(QueuePanel);
         Layout["Downloads"].Update(DownloadsPanel);
+        Layout["ActivePrompt"].Update(ActivePromptPanel);
     }
 
     private string BuildPlaybackBar(long currentMs, long totalMs, int width)
@@ -259,13 +269,21 @@ class Ui
         return rows.Count > 0;
     }
 
+    public void UpdateActivePrompt(Prompt prompt)
+    {
+        ActivePromptPanel = new Panel(prompt.Render())
+        {
+            // Header = new("", Justify.Right),
+            Expand = true,
+        }.BorderColor(Color.Yellow);
+    }
 
-    // TODO: Remove PlaybackPanel & QueuePanel while not registered/logged-in
     public void Update(
         Screen currentScreen,
         PlaybackInfo playbackInfo,
         IEnumerable<QueueItem> queueTracks,
-        List<DownloadTaskInfo> downloads
+        List<DownloadTaskInfo> downloads,
+        Prompt? activePrompt
         )
     {
         UpdatePlaybackPanel(playbackInfo);
@@ -280,6 +298,14 @@ class Ui
             Layout["Downloads"].Update(DownloadsPanel).Visible();
         else
             Layout["Downloads"].Invisible();
+        
+        if (activePrompt is not null)
+        {
+            UpdateActivePrompt(activePrompt);
+            Layout["ActivePrompt"].Update(ActivePromptPanel).Visible();
+        }
+        else
+            Layout["ActivePrompt"].Invisible();
     }
 
 }

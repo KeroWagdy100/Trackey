@@ -9,12 +9,11 @@ abstract class PromptScreen : Screen
     {
         public string Prompt;
         public InputText Input = new();
-        public bool IsAnswered;
         public List<string> Errors = [];
         public Func<string, ValidationResult>? Validator;
         public Predicate<char>? IsValidChar;
 
-        public Question( string prompt, Func<string, ValidationResult>? validator = null, Predicate<char>? isValidChar = null)
+        public Question(string prompt, Func<string, ValidationResult>? validator = null, Predicate<char>? isValidChar = null)
         {
             Prompt = prompt;
             Validator = validator;
@@ -26,7 +25,7 @@ abstract class PromptScreen : Screen
     }
 
     protected List<Question> questions;
-    protected int currentQuestionIndex = 0;
+    // protected int hoveredIndex = 0;
 
     protected PromptScreen(Application app) : base(app)
     {
@@ -59,7 +58,7 @@ abstract class PromptScreen : Screen
             string errors = string.Join("\n", q.Errors);
 
             string prompt = q.Prompt;
-            if (i == currentQuestionIndex)
+            if (i == hoveredIndex)
                 prompt = "[yellow]" + prompt + "[/]";
             table.AddRow(new Markup(prompt), q.Input.Render(), new Markup(errors, new Style(ConsoleColor.Red)));
         }
@@ -71,20 +70,20 @@ abstract class PromptScreen : Screen
     {
         if (key.Key == ConsoleKey.Enter)
         {
-            if (currentQuestionIndex == questions.Count - 1)
+            if (hoveredIndex == questions.Count - 1)
                 OnSubmit();
             else
                 MoveDown();
         }
         else if (key.Key == ConsoleKey.Escape)
             app.NavigateBack();
-        else if (char.IsAscii(key.KeyChar))
+        else
         {
-            questions[currentQuestionIndex].Input.HandleInput(key);
+            questions[hoveredIndex].Input.HandleInput(key);
             UpdateValidation();
         }
-        else 
-            base.HandleInput(key);
+
+        base.HandleInput(key);
     }
 
     protected abstract void OnSubmit();
@@ -92,21 +91,21 @@ abstract class PromptScreen : Screen
 
     public override void MoveTo(int index)
     {
-        questions[currentQuestionIndex].Input.IsActive = false;
+        questions[hoveredIndex].Input.IsActive = false;
         base.MoveTo(index);
-        questions[currentQuestionIndex].Input.IsActive = true;
+        questions[hoveredIndex].Input.IsActive = true;
     }
     public override void MoveUp()
     {
-        questions[currentQuestionIndex].Input.IsActive = false;
+        questions[hoveredIndex].Input.IsActive = false;
         base.MoveUp();
-        questions[currentQuestionIndex].Input.IsActive = true;
+        questions[hoveredIndex].Input.IsActive = true;
     }
     public override void MoveDown()
     {
-        questions[currentQuestionIndex].Input.IsActive = false;
+        questions[hoveredIndex].Input.IsActive = false;
         base.MoveDown();
-        questions[currentQuestionIndex].Input.IsActive = true;
+        questions[hoveredIndex].Input.IsActive = true;
     }
 
 

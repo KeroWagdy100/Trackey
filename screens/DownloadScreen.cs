@@ -16,7 +16,7 @@ sealed class DownloadScreen : PromptScreen
 
     public override async void HandleInput(ConsoleKeyInfo key)
     {
-        if (key.Key == ConsoleKey.Enter && currentQuestionIndex == 0)
+        if (key.Key == ConsoleKey.Enter && hoveredIndex == 0)
         {
             var data = await app.Downloader.DownloadMetadataAsync(Answer(0));
 
@@ -65,7 +65,7 @@ sealed class DownloadScreen : PromptScreen
             string errors = string.Join("\n", q.Errors);
 
             string prompt = Ui.Sanitize(q.Prompt);
-            if (i == currentQuestionIndex)
+            if (i == hoveredIndex)
                 prompt = "[yellow]" + prompt + "[/]";
             table.AddRow(new Markup(prompt), q.Input.Render());
         }

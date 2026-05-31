@@ -15,6 +15,8 @@ class TableViewScreen<T> : Screen where T : ITableRow
     {
     }
 
+    public void AddItem(T newItem) => Items.Add(newItem);
+    public void AddItems(IEnumerable<T> newItems) => Items.AddRange(newItems);
 
     public override IRenderable Render()
     {

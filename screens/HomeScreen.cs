@@ -15,10 +15,10 @@ sealed class HomeScreen : MenuScreen
             app.SetCurrentUser(null);
             app.NavigateTo(new HomeScreen(app), false);
         }
-        else if (options[index] == "Library")
-        {
-            app.NavigateTo(new PlaylistView(app, app.Lib.FullLibraryPlaylistId), true);
-        }
+        else if (options[index] == "Library (All Playlists)")
+            app.NavigateTo(new LibraryViewScreen(app), true);
+        else if (options[index] == "All Tracks")
+            app.NavigateTo(new TrackListScreen(app, app.Lib.AllTracks), true);
     }
 
     public HomeScreen(Application app) : base(app)
@@ -34,9 +34,10 @@ sealed class HomeScreen : MenuScreen
         else
         {
             options.Add("Download");
+            options.Add("All Tracks");
+            options.Add("Library (All Playlists)");
             options.Add("Logout");
         }
 
-        options.Add("Library");
     }
 }
