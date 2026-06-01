@@ -16,9 +16,9 @@ sealed class HomeScreen : MenuScreen
             app.NavigateTo(new HomeScreen(app), false);
         }
         else if (options[index] == "Library (All Playlists)")
-            app.NavigateTo(new LibraryViewScreen(app), true);
+            app.NavigateTo(new LibraryViewScreen(app)  {Title = "Library"}, true);
         else if (options[index] == "All Tracks")
-            app.NavigateTo(new TrackListScreen(app, app.Lib.AllTracks), true);
+            app.NavigateTo(new TrackListScreen(app, app.Lib.AllTracks) {Title = "All Tracks"}, true);
     }
 
     public HomeScreen(Application app) : base(app)

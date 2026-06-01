@@ -17,6 +17,29 @@ class LibraryViewScreen : TableViewScreen<Playlist>
         AddItems(app.Lib.AllPlaylists);
     }
 
+    public override IEnumerable<Shortcut> Shortcuts => [
+        new Shortcut() {
+            Description = "Create [N]ew Playlist",
+            Combo = new KeyCombo(ConsoleKey.N)
+        },
+        new Shortcut() {
+            Description = "[R]ename hovered playlist",
+            Combo = new KeyCombo(ConsoleKey.R)
+        },
+        new Shortcut() {
+            Description = "[A]dd tracks to hovered playlist",
+            Combo = new KeyCombo(ConsoleKey.A)
+        },
+        new Shortcut() {
+            Description = "Add selected tracks [Q]ueue",
+            Combo = new KeyCombo(ConsoleKey.Q, Shift: true)
+        },
+        new Shortcut() {
+            Description = "Add hovered track [q]ueue",
+            Combo = new KeyCombo(ConsoleKey.Q)
+        },
+    ];
+
     public override void HandleInput(ConsoleKeyInfo key)
     {
         // Create [N]ew playlist
@@ -87,6 +110,5 @@ class LibraryViewScreen : TableViewScreen<Playlist>
 
         base.HandleInput(key);
     }
-
 
 }

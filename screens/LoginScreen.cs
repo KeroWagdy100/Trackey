@@ -1,3 +1,4 @@
+
 namespace Trackey;
 
 sealed class LoginScreen : PromptScreen

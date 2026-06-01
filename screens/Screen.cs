@@ -30,5 +30,6 @@ abstract class Screen
     public virtual void MoveDown() => hoveredIndex = (hoveredIndex + 1) % OptionsCount();
 
     public bool CapturesTextInput { get; protected set; } = false;
-    public string Title { get; set; } = "";
+    public virtual string Title {get; set;} = "";
+    public virtual IEnumerable<Shortcut> Shortcuts => [];
 }

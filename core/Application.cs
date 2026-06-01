@@ -201,6 +201,7 @@ class Application
     // Key Handlers
     public void HandleKey(ConsoleKeyInfo key)
     {
+        Logger.Log($"{key.KeyChar} pressed [{key.Key}]");
         if (key.KeyChar == ';')
         {
             TogglePlaybackControls();
@@ -228,6 +229,29 @@ class Application
         else if (key.Key == ConsoleKey.M) Player.ToggleMute();
     }
 
+    public IEnumerable<Shortcut> GlobalShortcuts => [
+        new Shortcut() {
+            Description = "[Q]uit Application",
+            Combo = new KeyCombo(ConsoleKey.Q)
+        },
+        new Shortcut() {
+            Description = "Play next track in queue",
+            Combo = new KeyCombo(ConsoleKey.Oem6, Shift: true, Char: '}')
+        },
+        new Shortcut() {
+            Description = "Play previous track in queue",
+            Combo = new KeyCombo(ConsoleKey.Oem4, Shift: true, Char: '{')
+        },
+        new Shortcut() {
+            Description = "Navigate to previous screen",
+            Combo = new KeyCombo(ConsoleKey.Oem4, Shift: true, Char: '<')
+        },
+        new Shortcut() {
+            Description = "Show Shortcuts Guide Screen",
+            Combo = new KeyCombo(ConsoleKey.G, Ctrl: true)
+        },
+    ];
+
     public bool HandleGlobalShortcuts(ConsoleKeyInfo key)
     {
         bool ctrl = key.Modifiers.HasFlag(ConsoleModifiers.Control);
@@ -248,6 +272,8 @@ class Application
             NavigateForward();
         else if (key.KeyChar == '<')
             NavigateBack();
+        else if (key.Key == ConsoleKey.G && ctrl && CurrentScreen is not GuideScreen)
+            NavigateTo(new GuideScreen(this, CurrentScreen.Shortcuts), true);
         else
             return false;
 

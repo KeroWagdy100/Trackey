@@ -6,6 +6,7 @@ namespace Trackey;
 class PlaylistViewScreen : TrackListScreen
 {
     private Guid playlistId;
+    private string playlistTitle = "N/A";
 
     public PlaylistViewScreen(Application app, Guid playlistId) : base(app)
     {
@@ -35,6 +36,9 @@ class PlaylistViewScreen : TrackListScreen
 
         if (!app.Lib.TryGetPlaylist(playlistId, out var playlist))
             throw new ArgumentException($"Playlist with id {playlistId} not found");
+
+        this.playlistTitle = playlist.Title;
+        Title = $"Playlist {playlistTitle}";
 
         foreach (var trackId in playlist.TrackIds)
         {
