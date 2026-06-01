@@ -232,7 +232,7 @@ class Application
     public IEnumerable<Shortcut> GlobalShortcuts => [
         new Shortcut() {
             Description = "[Q]uit Application",
-            Combo = new KeyCombo(ConsoleKey.Q)
+            Combo = new KeyCombo(ConsoleKey.Q, Ctrl: true)
         },
         new Shortcut() {
             Description = "Play next track in queue",
