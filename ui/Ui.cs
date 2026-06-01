@@ -21,7 +21,7 @@ class Ui
         return s;
     }
 
-    public static string BuildProgressBar(double ratio, int width, char unfilledChar = '-', char filledChar = '-', string unfilledColor = "white", string filledColor = "green")
+    public static string BuildProgressBar(double ratio, int width, char unfilledChar = '⎯', char filledChar = '⎯', string unfilledColor = "white", string filledColor = "green")
     {
         int filled = (int)(ratio * width);
         string line = 
@@ -112,7 +112,9 @@ class Ui
 
     private string BuildPlaybackBar(long currentMs, long totalMs, int width)
     {
-        double ratio = (double)currentMs / totalMs;
+        double ratio = 0.0;
+        if (totalMs > 0)
+            ratio = (double)currentMs / totalMs;
 
         int currentSecond = (int)currentMs / 1000;
         int currentMinute = currentSecond / 60;
@@ -126,7 +128,7 @@ class Ui
         return
         currentMinute.ToString().PadLeft(2, '0') + ":" + currentSecond.ToString().PadLeft(2, '0')
         + " "
-        + BuildProgressBar(ratio, width, '-', '-', "white", "green")
+        + BuildProgressBar(ratio, width, '⎯', '⎯', "white", "green")
         + " "
         + totalMinute.ToString().PadLeft(2, '0') + ":" + totalSecond.ToString().PadLeft(2, '0');
     }
