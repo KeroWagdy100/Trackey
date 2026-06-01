@@ -21,6 +21,21 @@ class TrackListScreen : TableViewScreen<Track>
         Items.Add(track);
     }
 
+    public override IEnumerable<Shortcut> Shortcuts => [
+        new Shortcut() {
+            Description = "Play hovered track now",
+            Combo = new KeyCombo(ConsoleKey.P)
+        },
+        new Shortcut() {
+            Description = "Add selected tracks to [Q]ueue",
+            Combo = new KeyCombo(ConsoleKey.Q, Shift: true)
+        },
+        new Shortcut() {
+            Description = "Add hovered track to [q]ueue",
+            Combo = new KeyCombo(ConsoleKey.Q)
+        },
+    ];
+
     public override void HandleInput(ConsoleKeyInfo key)
     {
         if (key.Key == ConsoleKey.Enter && OnSubmit is not null)

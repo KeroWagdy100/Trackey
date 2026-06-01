@@ -20,11 +20,15 @@ class TableViewScreen<T> : Screen where T : ITableRow
 
     public override IRenderable Render()
     {
-        var table = new Table().Expand().NoBorder().ShowRowSeparators().AddColumn("", col => col.Width = 4);
+        var table = new Table()
+        .Expand()
+        .NoBorder()
+        .ShowRowSeparators()
+        .AddColumn("", col => col.Width = 4);
 
         var cols = T.Headers();
         foreach (var col in cols)
-            table.AddColumn(col);
+            table.AddColumn(col, col => col.Centered());
 
         for (int i = 0; i < Items.Count; ++i)
         {
@@ -44,7 +48,7 @@ class TableViewScreen<T> : Screen where T : ITableRow
             table.AddRow(vals.ToArray());
         }
 
-        return table;
+        return new Padder(table, new Padding(0, 1, 0, 0));
     }
 
     public override void HandleInput(ConsoleKeyInfo key)
