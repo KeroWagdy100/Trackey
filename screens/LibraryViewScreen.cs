@@ -19,6 +19,10 @@ class LibraryViewScreen : TableViewScreen<Playlist>
 
     public override IEnumerable<Shortcut> Shortcuts => [
         new Shortcut() {
+            Description = "View hovered playlist",
+            Combo = new KeyCombo(ConsoleKey.Enter)
+        },
+        new Shortcut() {
             Description = "Create [N]ew Playlist",
             Combo = new KeyCombo(ConsoleKey.N)
         },
@@ -106,6 +110,12 @@ class LibraryViewScreen : TableViewScreen<Playlist>
         else if (key.Key == ConsoleKey.Q)
         {
             app.Queue.Enqueue(Items[hoveredIndex]);
+        }
+
+        // View hovered playlist
+        else if (key.Key == ConsoleKey.Enter)
+        {
+            app.NavigateTo(new TrackListScreen(app, Items[hoveredIndex].Id), true);
         }
 
         base.HandleInput(key);

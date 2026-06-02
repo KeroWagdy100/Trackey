@@ -2,23 +2,33 @@ namespace Trackey;
 
 class TrackListScreen : TableViewScreen<Track>
 {
-
+    public Guid? PlaylistId;
     public Action<IEnumerable<Track>>? OnSubmit {get; set;}
     public override bool MultiSelect => true;
 
     public TrackListScreen(Application app) : base(app)
     {
+        Title = "Tracks";
+    }
 
+    public TrackListScreen(Application app, Guid playlistId) : base(app)
+    {
+        PlaylistId = playlistId;
+        ReloadPlaylist();
     }
 
     public TrackListScreen(Application app, IEnumerable<Track> tracks) : base(app)
     {
-        Items.AddRange(tracks);
+        AddItems(tracks);
+        Title = "Tracks";
     }
 
-    public void AddTrack(Track track)
+    public void ReloadPlaylist()
     {
-        Items.Add(track);
+        if (PlaylistId is null) return;
+        Items.Clear();
+        AddItems(app.Lib.GetPlaylistTracks(PlaylistId.Value));
+        Title = $"{app.Lib.GetPlaylistTitle(PlaylistId.Value)} - Playlist";
     }
 
     public override IEnumerable<Shortcut> Shortcuts => [
@@ -38,6 +48,7 @@ class TrackListScreen : TableViewScreen<Track>
 
     public override void HandleInput(ConsoleKeyInfo key)
     {
+        bool shift = key.Modifiers.HasFlag(ConsoleModifiers.Shift);
         if (key.Key == ConsoleKey.Enter && OnSubmit is not null)
         {
             OnSubmit(SelectedIndices.Select(i => Items[i]));
@@ -50,7 +61,7 @@ class TrackListScreen : TableViewScreen<Track>
         }
 
         // Add selected tracks to queue
-        else if (key.Key == ConsoleKey.Q && key.Modifiers.HasFlag(ConsoleModifiers.Shift))
+        else if (key.Key == ConsoleKey.Q && shift)
         {
             foreach (var i in SelectedIndices)
                 app.Queue.Enqueue(Items[i].Id);
@@ -63,7 +74,7 @@ class TrackListScreen : TableViewScreen<Track>
         }
 
         // Add selected tracks to some playlist
-        else if (key.Key == ConsoleKey.A && key.Modifiers.HasFlag(ConsoleModifiers.Shift))
+        else if (key.Key == ConsoleKey.A && shift)
         {
 
         }
@@ -78,6 +89,26 @@ class TrackListScreen : TableViewScreen<Track>
         else if (key.Key == ConsoleKey.E)
         {
 
+        }
+
+        // [R]emove selected tracks from the playlist
+        else if (PlaylistId is not null && key.Key == ConsoleKey.R && shift)
+        {
+            app.Lib.RemoveTracksFromPlaylist(
+                PlaylistId.Value,
+                SelectedIndices.Select(i => Items[i].Id)
+            );
+            ReloadPlaylist();
+        }
+
+        // [R]emove hovered track from the playlist
+        else if (PlaylistId is not null && key.Key == ConsoleKey.R)
+        {
+            app.Lib.RemoveTracksFromPlaylist(
+                PlaylistId.Value,
+                [Items[hoveredIndex].Id]
+            );
+            ReloadPlaylist();
         }
 
         else

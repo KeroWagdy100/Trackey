@@ -38,6 +38,15 @@ class Library
         await SaveLibrary();
     }
 
+    public async void RemoveTracksFromPlaylist(Guid playlistId, IEnumerable<Guid> tracksIds)
+    {
+        if (!TryGetPlaylist(playlistId, out var playlist))
+            throw new ArgumentException($"Playlist with {playlistId} not found");
+
+        foreach (var trackId in tracksIds)
+            playlist.TrackIds.RemoveAll(id => id == trackId);
+        await SaveLibrary();
+    }
     public async void RenamePlaylist(Guid playlistId, string newTitle)
     {
         if (!TryGetPlaylist(playlistId, out var playlist))
@@ -58,6 +67,30 @@ class Library
         if (!Playlists.TryGetValue(playlistId, out playlist))
             return false;
         return true;
+    }
+
+    public IEnumerable<Track> GetPlaylistTracks(Guid playlistId)
+    {
+        if (!TryGetPlaylist(playlistId, out var playlist))
+            throw new ArgumentException($"Playlist with {playlistId} not found");
+
+        var ids = playlist.TrackIds;
+        List<Track> tracks = [];
+        foreach (var id in ids)
+        {
+            if (!TryGetTrack(id, out Track? track))
+                throw new InvalidOperationException($"Track with {id} not found");
+            tracks.Add(track);
+        }
+
+        return tracks;
+    }
+
+    public string GetPlaylistTitle(Guid playlistId)
+    {
+        if (!TryGetPlaylist(playlistId, out var playlist))
+            throw new ArgumentException($"Playlist with {playlistId} not found");
+        return playlist.Title;
     }
 
     public Track? UpdateTrack(Guid trackId, Track track)
