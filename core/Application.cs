@@ -304,7 +304,15 @@ class Application
 
         ActiveDownloads.Add(taskInfo);
 
-        OperationResult<string> res = await Downloader.DownloadAudioAsync(url, taskInfo.UpdateProgress, new());
+        var trackId = Guid.NewGuid();
+
+        OperationResult<string> res = await Downloader.DownloadAudioAsync(
+            url,
+            taskInfo.UpdateProgress,
+            new(),
+            trackId.ToString("N")
+        );
+
         taskInfo.CompletedAt = DateTime.Now;
         taskInfo.FilePath = res.Data;
         taskInfo.ErrorMessage = res.ErrorMessage;
@@ -318,7 +326,7 @@ class Application
 
         var track = new Track()
         {
-            Id = Guid.NewGuid(),
+            Id = trackId,
             OwnerUserId = CurrUserId!.Value,
             Title = taskInfo.Title,
             Artist = taskInfo.Artist,

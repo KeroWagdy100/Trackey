@@ -120,7 +120,6 @@ class InputText
 
             if (IsActive && ShowCursor && i == CursorIndex)
             {
-                Logger.Log("Cursor shown");
                 text += $"[black on white]{c}[/]";
             }
             else

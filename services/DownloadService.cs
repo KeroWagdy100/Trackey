@@ -2,6 +2,7 @@ namespace Trackey;
 
 using YoutubeDLSharp;
 using YoutubeDLSharp.Metadata;
+using YoutubeDLSharp.Options;
 
 record DownloadResult(
     bool Success,
@@ -28,15 +29,22 @@ class DownloadService
     {
         ytdl = new YoutubeDL
         {
-            OutputFolder = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyMusic)}"
+            OutputFolder = Paths.MusicDir
         };
     }
 
-    public async Task<OperationResult<string>> DownloadAudioAsync(string url, Action<DownloadProgress> progressHandler, CancellationToken token)
+    public async Task<OperationResult<string>> DownloadAudioAsync(string url, Action<DownloadProgress> progressHandler, CancellationToken token, string filename)
     {
+        ytdl.OutputFileTemplate = $"{filename}.%(ext)s";
+
+        var options = new OptionSet()
+        {
+            // Format = "best"
+        };
+
         Logger.Log("Download Started");
         var progress = new Progress<DownloadProgress>(progressHandler);
-        var res = await ytdl.RunAudioDownload(url, progress: progress, ct: token);
+        var res = await ytdl.RunAudioDownload(url, progress: progress, ct: token, overrideOptions: options);
         Logger.Log($"Download Finished, filepath: {res.Data} [{File.Exists(res.Data)}], e: {string.Join("\n", res.ErrorOutput)}");
         // return new(res.Success, res.Data, res.ErrorOutput);
         return new(res.Success, res.Data, string.Join('\n', res.ErrorOutput));
