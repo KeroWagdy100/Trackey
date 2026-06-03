@@ -21,7 +21,7 @@ sealed class RegisterScreen : PromptScreen
 
             for (int i = 0; i < result.Errors?.Count; ++i)
             {
-                if (result.Field == "username")
+                if (result.FieldName == "username")
                     questions[0].Errors.Add(result.Errors[i]);
                 else
                     questions[1].Errors.Add(result.Errors[i]);
@@ -33,5 +33,6 @@ sealed class RegisterScreen : PromptScreen
         app.SetCurrentUser(user!.Id);
         app.ClearBackScreens();
         app.NavigateTo(new HomeScreen(app), false);
+        app.AddNotification(Notification.Success("Registered successfully"));
     }
 }

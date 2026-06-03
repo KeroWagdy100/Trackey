@@ -107,12 +107,12 @@ class Library
         else return null;
     }
 
-    public async Task<bool> LoadLibrary()
+    public async Task<OperationResult> LoadLibrary()
     {
         Tracks = [];
         Playlists = [];
         if (!File.Exists(LIB_FILEPATH))
-            return true;
+            return OperationResult.Ok();
 
         try
         {
@@ -121,23 +121,23 @@ class Library
             var data = await JsonSerializer.DeserializeAsync<LibraryData>(fs);
 
             if (data is null)
-                return false;
+                return OperationResult.Fail("Failed to load library");
 
             Tracks = data.Tracks.ToDictionary(t => t.Id);
             Playlists = data.Playlists.ToDictionary(p => p.Id);
 
 
             Logger.Log($"Loaded Library Successfully");
-            return true;
+            return OperationResult.Ok();
         }
         catch (Exception ex)
         {
             Logger.Log(ex.ToString());
-            return false;
+            return OperationResult.Fail("Failed to load library");
         }
     }
 
-    public async Task<bool> SaveLibrary()
+    public async Task<OperationResult> SaveLibrary()
     {
         try
         {
@@ -155,12 +155,12 @@ class Library
             );
 
             Logger.Log($"Saved Library Successfully");
-            return true;
+            return OperationResult.Ok();
         }
         catch (Exception ex)
         {
             Logger.Log(ex.ToString());
-            return false;
+            return OperationResult.Fail("Failed to save library");
         }
     }
 

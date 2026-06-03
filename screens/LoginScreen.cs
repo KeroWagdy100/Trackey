@@ -20,7 +20,7 @@ sealed class LoginScreen : PromptScreen
         if (!result.Success)
         {
 
-            if (result.Field == "username")
+            if (result.FieldName == "username")
             {
                 ClearErrors(0);
                 // Reset(0);
@@ -40,5 +40,6 @@ sealed class LoginScreen : PromptScreen
         app.SetCurrentUser(user!.Id);
         app.ClearBackScreens();
         app.NavigateTo(new HomeScreen(app), false);
+        app.AddNotification(Notification.Success("Logged in successfully"));
     }
 }

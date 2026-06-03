@@ -2,6 +2,6 @@ namespace Trackey;
 
 record ValidationResult(
     bool Success,
-    string? Field,
+    string? FieldName,
     List<string>? Errors
 );

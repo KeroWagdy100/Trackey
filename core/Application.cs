@@ -34,6 +34,7 @@ class Application
     private bool nextTrackRequested = false;
 
     public List<DownloadTaskInfo> ActiveDownloads = [];
+    public List<Notification> ActiveNotifications = [];
 
     // Ui
     private Ui ui = new();
@@ -47,14 +48,32 @@ class Application
     {
         Paths.Init();
         Logger.Clear();
-        await Users.LoadUsers();
-        await Lib.LoadLibrary();
+
+        var usersLoaded = await Users.LoadUsers();
+        if (!usersLoaded.Success)
+            AddNotification(Notification.Error(usersLoaded.ErrorMessage ?? "Failed to load users"));
+        else
+            AddNotification(Notification.Success("Loaded users successfully"));
+
+        var libLoaded = await Lib.LoadLibrary();
+        if (!libLoaded.Success)
+            AddNotification(Notification.Error(usersLoaded.ErrorMessage ?? "Failed to load users"));
+        else
+            AddNotification(Notification.Success("Loaded library successfully"));
     }
 
     public async Task FinalizeAsync()
     {
-        await Users.SaveUsers();
-        await Lib.SaveLibrary();
+        var usersSaved = await Users.SaveUsers();
+        if (!usersSaved.Success)
+            AddNotification(Notification.Error(usersSaved.ErrorMessage ?? "Failed to save users"));
+        else
+            AddNotification(Notification.Success("Saved users successfully"));
+        var libSaved = await Lib.SaveLibrary();
+        if (!libSaved.Success)
+            AddNotification(Notification.Error(libSaved.ErrorMessage ?? "Failed to save library"));
+        else
+            AddNotification(Notification.Success("Saved library successfully"));
     }
 
     public Application()
@@ -95,6 +114,7 @@ class Application
         UpdateQueue();
 
         UpdateActiveDownloads();
+        UpdateNotifications();
 
         ui.Update(CurrentScreen,
             new PlaybackInfo(
@@ -108,7 +128,8 @@ class Application
                 ),
             GetQueueItems(),
             ActiveDownloads,
-            ActivePrompt
+            ActivePrompt,
+            ActiveNotifications
         );
     }
 
@@ -145,6 +166,16 @@ class Application
         ActiveDownloads.RemoveAll(
         t => t.CompletedAt is DateTime completed
         && (now - completed).TotalSeconds >= 4
+        );
+    }
+
+    // Removes Notifications Completed before 4 seconds or more
+    public void UpdateNotifications()
+    {
+        var now = DateTime.Now;
+        ActiveNotifications.RemoveAll(
+        t => t.CreatedAt is DateTime created
+        && (now - created).TotalSeconds >= 4
         );
     }
 
@@ -324,6 +355,8 @@ class Application
         await Lib.AddTrack(track);
         Queue.Enqueue(track.Id);
     }
+
+    public void AddNotification(Notification notification) => ActiveNotifications.Add(notification);
 
     public async void CreatePlaylist(string playlistTitle)
     {

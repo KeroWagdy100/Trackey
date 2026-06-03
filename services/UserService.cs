@@ -141,11 +141,11 @@ class UserService
         PropertyNameCaseInsensitive = true
     };
 
-    public async Task<bool> LoadUsers()
+    public async Task<OperationResult> LoadUsers()
     {
         users = [];
         if (!File.Exists(USERS_FILEPATH))
-            return true;
+            return OperationResult.Ok();
 
         try
         {
@@ -154,21 +154,21 @@ class UserService
             var data = await JsonSerializer.DeserializeAsync<List<User>>(fs);
 
             if (data is null)
-                return false;
+                return OperationResult.Fail("Failed to load users");
 
             users = data;
 
             Logger.Log($"Loaded Users Successfully");
-            return true;
+            return OperationResult.Ok();
         }
         catch (Exception ex)
         {
             Logger.Log(ex.ToString());
-            return false;
+            return OperationResult.Fail("Failed to load users");
         }
     }
 
-    public async Task<bool> SaveUsers()
+    public async Task<OperationResult> SaveUsers()
     {
         try
         {
@@ -177,12 +177,12 @@ class UserService
             await JsonSerializer.SerializeAsync(fs, users, JsonOptions);
 
             Logger.Log($"Saved Users Successfully");
-            return true;
+            return OperationResult.Ok();
         }
         catch (Exception ex)
         {
             Logger.Log(ex.ToString());
-            return false;
+            return OperationResult.Fail("Failed to save users");
         }
     }
 }

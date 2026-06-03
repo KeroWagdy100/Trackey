@@ -42,6 +42,7 @@ class Ui
     private Panel QueuePanel { get; set; }
     private Panel DownloadsPanel { get; set; }
     private Panel ActivePromptPanel { get; set; }
+    private Rows NotificationsRows { get; set; }
 
     public Ui()
     {
@@ -76,16 +77,7 @@ class Ui
             Border = BoxBorder.None
         };
 
-        // Layout = new Layout("Root").SplitColumns(
-        //     new Layout("MainCol").Ratio(3),
-        //     new Layout("Queue").Ratio(1)
-        // );
-
-        // Layout["MainCol"].SplitRows(
-        //     new Layout("Playback").Size(4),
-        //     new Layout("Main"),
-        //     new Layout("Downloads").Size(4)
-        // );
+        NotificationsRows = new();
 
         Layout = new Layout("Root").SplitRows(
             new Layout("MainRow"),
@@ -99,6 +91,7 @@ class Ui
 
         Layout["MainWindow"].SplitRows(
             new Layout("Main"),
+            new Layout("Notifications").Size(3),
             new Layout("ActivePrompt").Size(3),
             new Layout("Downloads").Size(4)
         );
@@ -108,6 +101,7 @@ class Ui
         Layout["Queue"].Update(QueuePanel);
         Layout["Downloads"].Update(DownloadsPanel);
         Layout["ActivePrompt"].Update(ActivePromptPanel);
+        Layout["Notifications"].Update(NotificationsRows);
     }
 
     private string BuildPlaybackBar(long currentMs, long totalMs, int width)
@@ -202,7 +196,7 @@ class Ui
         {
             Header = new(currentScreen.Title, Justify.Center),
             Expand = true
-        }.BorderColor(Color.White);
+        }.NoBorder();
     }
 
     public void UpdateQueuePanel(IEnumerable<QueueItem> queueItems)
@@ -280,12 +274,22 @@ class Ui
         }.BorderColor(Color.Yellow);
     }
 
+    public void UpdateNotifications(IEnumerable<Notification> nots)
+    {
+        NotificationsRows = new Rows(nots.Select(n => new Markup(n.RenderedText())))
+        {
+            // Header = new("", Justify.Right),
+            Expand = true,
+        };
+    }
+
     public void Update(
         Screen currentScreen,
         PlaybackInfo playbackInfo,
         IEnumerable<QueueItem> queueTracks,
         List<DownloadTaskInfo> downloads,
-        Prompt? activePrompt
+        Prompt? activePrompt,
+        IEnumerable<Notification> notifications
         )
     {
         UpdatePlaybackPanel(playbackInfo);
@@ -308,6 +312,18 @@ class Ui
         }
         else
             Layout["ActivePrompt"].Invisible();
+
+        if (notifications.Any())
+        {
+            UpdateNotifications(notifications);
+
+            Layout["Notifications"]
+            .Update(NotificationsRows)
+            .Visible()
+            .Size(notifications.Count()+1);
+        }
+        else
+            Layout["Notifications"].Invisible();
     }
 
 }
