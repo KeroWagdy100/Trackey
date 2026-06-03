@@ -47,6 +47,7 @@ class AudioPlayer
         currentMedia = new Media(libvlc, filename, FromType.FromPath);
         player.Media = currentMedia;
 
+        Logger.Log($"Play {filename} ({File.Exists(filename)})");
         player.Play();
     }
 

@@ -1,3 +1,4 @@
+using LibVLCSharp.Shared;
 using Spectre.Console;
 
 namespace Trackey;
@@ -44,21 +45,16 @@ class Application
 
     public async Task InitializeAsync()
     {
+        Paths.Init();
+        Logger.Clear();
         await Users.LoadUsers();
         await Lib.LoadLibrary();
-
-        // Adds all tracks in library directly to queue
-
-        // var allTracks = Lib.AllTracksIds;
-        // foreach (var id in allTracks)
-        //     Queue.AddTrack(id);
     }
 
     public async Task FinalizeAsync()
     {
         await Users.SaveUsers();
         await Lib.SaveLibrary();
-        Logger.Clear();
     }
 
     public Application()
@@ -201,7 +197,7 @@ class Application
     // Key Handlers
     public void HandleKey(ConsoleKeyInfo key)
     {
-        Logger.Log($"{key.KeyChar} pressed [{key.Key}]");
+        // Logger.Log($"{key.KeyChar} pressed [{key.Key}]");
         if (key.KeyChar == ';')
         {
             TogglePlaybackControls();
@@ -305,10 +301,14 @@ class Application
 
         ActiveDownloads.Add(taskInfo);
 
-        var res = await Downloader.DownloadAudioAsync(url, taskInfo.UpdateProgress, new());
+        DownloadResult res = await Downloader.DownloadAudioAsync(url, taskInfo.UpdateProgress, new());
         taskInfo.CompletedAt = DateTime.Now;
         taskInfo.FilePath = res.Filepath;
         taskInfo.ErrorMessage = string.Join("\n", res.ErrorResult);
+
+
+        if (!res.Success)
+            return;
 
         var track = new Track()
         {

@@ -10,7 +10,7 @@ class Library
 {
     private Dictionary<Guid, Track> Tracks = [];
     private Dictionary<Guid, Playlist> Playlists = [];
-    private const string LIB_FILEPATH = "./data/library.json";
+    private static readonly string LIB_FILEPATH = Paths.LibraryFile;
 
     public static Predicate<char> ValidateTitleChar = c => char.IsAsciiLetterOrDigit(c) || "!@#$%^&*()[] ".Contains(c);
     public static Predicate<char> ValidateArtistChar = c => char.IsAsciiLetterOrDigit(c) || "!@#$%^&*()[] ".Contains(c);

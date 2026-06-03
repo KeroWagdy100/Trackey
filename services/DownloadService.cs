@@ -37,7 +37,7 @@ class DownloadService
         Logger.Log("Download Started");
         var progress = new Progress<DownloadProgress>(progressHandler);
         var res = await ytdl.RunAudioDownload(url, progress: progress, ct: token);
-        Logger.Log($"Download Finished, e: {string.Join("\n", res.ErrorOutput)}");
+        Logger.Log($"Download Finished, filepath: {res.Data} [{File.Exists(res.Data)}], e: {string.Join("\n", res.ErrorOutput)}");
         return new(res.Success, res.Data, res.ErrorOutput);
     }
 

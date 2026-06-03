@@ -134,7 +134,7 @@ class UserService
         return user is not null;
     }
 
-    private const string USERS_FILEPATH = "./data/users.json";
+    private static readonly string USERS_FILEPATH = Paths.UsersFile;
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         WriteIndented = true,
@@ -172,7 +172,7 @@ class UserService
     {
         try
         {
-            using FileStream fs = File.Open("./data/users.json", FileMode.Create);
+            using FileStream fs = File.Open(USERS_FILEPATH, FileMode.Create);
 
             await JsonSerializer.SerializeAsync(fs, users, JsonOptions);
 
