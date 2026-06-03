@@ -26,8 +26,16 @@ abstract class Screen
 
     public abstract int OptionsCount();
     public virtual void MoveTo(int index) => hoveredIndex = index < OptionsCount() && index >= 0 ? index : hoveredIndex;
-    public virtual void MoveUp() => hoveredIndex = (hoveredIndex - 1 + OptionsCount()) % OptionsCount();
-    public virtual void MoveDown() => hoveredIndex = (hoveredIndex + 1) % OptionsCount();
+    public virtual void MoveUp()
+    {
+        if (OptionsCount() <= 0) return;
+        hoveredIndex = (hoveredIndex - 1 + OptionsCount()) % OptionsCount();
+    }
+    public virtual void MoveDown()
+    {
+        if (OptionsCount() <= 0) return;
+        hoveredIndex = (hoveredIndex + 1) % OptionsCount();
+    }
 
     public bool CapturesTextInput { get; protected set; } = false;
     public virtual string Title {get; set;} = "";
