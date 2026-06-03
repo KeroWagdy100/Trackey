@@ -1,4 +1,5 @@
 using System.Collections.Specialized;
+using System.Text;
 using LibVLCSharp.Shared;
 using Spectre.Console;
 using YoutubeDLSharp.Metadata;
@@ -85,8 +86,14 @@ class Application
 
     public async Task InitializeAsync()
     {
+        // Force the console to process UTF-8
+        Console.InputEncoding = Encoding.UTF8;
+        Console.OutputEncoding = Encoding.UTF8;
+
         Paths.Init();
         Logger.Clear();
+
+
 
         var usersLoaded = await Users.LoadUsers();
         if (!usersLoaded.Success)
