@@ -1,5 +1,7 @@
+using System.Collections.Specialized;
 using LibVLCSharp.Shared;
 using Spectre.Console;
+using YoutubeDLSharp.Metadata;
 
 namespace Trackey;
 
@@ -34,7 +36,7 @@ class Application
     private bool nextTrackRequested = false;
 
     public List<DownloadTaskInfo> ActiveDownloads = [];
-    public List<Notification> ActiveNotifications = [];
+    public Dictionary<Guid, Notification> ActiveNotifications = [];
 
     // Ui
     private Ui ui = new();
@@ -129,7 +131,7 @@ class Application
             GetQueueItems(),
             ActiveDownloads,
             ActivePrompt,
-            ActiveNotifications
+            ActiveNotifications.Values
         );
     }
 
@@ -172,11 +174,8 @@ class Application
     // Removes Notifications Completed before 4 seconds or more
     public void UpdateNotifications()
     {
-        var now = DateTime.Now;
-        ActiveNotifications.RemoveAll(
-        t => t.CreatedAt is DateTime created
-        && (now - created).TotalSeconds >= 4
-        );
+        foreach (var n in ActiveNotifications.Where(n => n.Value.IsExpired()))
+            ActiveNotifications.Remove(n.Key);
     }
 
     public IEnumerable<QueueItem> GetQueueItems()
@@ -332,14 +331,17 @@ class Application
 
         ActiveDownloads.Add(taskInfo);
 
-        DownloadResult res = await Downloader.DownloadAudioAsync(url, taskInfo.UpdateProgress, new());
+        OperationResult<string> res = await Downloader.DownloadAudioAsync(url, taskInfo.UpdateProgress, new());
         taskInfo.CompletedAt = DateTime.Now;
-        taskInfo.FilePath = res.Filepath;
-        taskInfo.ErrorMessage = string.Join("\n", res.ErrorResult);
+        taskInfo.FilePath = res.Data;
+        taskInfo.ErrorMessage = res.ErrorMessage;
 
 
         if (!res.Success)
+        {
+            AddNotification(Notification.Error($"Download failed: {taskInfo.ErrorMessage}"));
             return;
+        }
 
         var track = new Track()
         {
@@ -356,7 +358,17 @@ class Application
         Queue.Enqueue(track.Id);
     }
 
-    public void AddNotification(Notification notification) => ActiveNotifications.Add(notification);
+    public Guid AddNotification(Notification notification)
+    {
+        Guid guid = Guid.NewGuid();
+        ActiveNotifications[guid] = notification;
+        return guid;
+    }
+
+    public void RemoveNotification(Guid notificationId)
+    {
+        ActiveNotifications.Remove(notificationId);
+    }
 
     public async void CreatePlaylist(string playlistTitle)
     {

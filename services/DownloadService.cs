@@ -32,20 +32,21 @@ class DownloadService
         };
     }
 
-    public async Task<DownloadResult> DownloadAudioAsync(string url, Action<DownloadProgress> progressHandler, CancellationToken token)
+    public async Task<OperationResult<string>> DownloadAudioAsync(string url, Action<DownloadProgress> progressHandler, CancellationToken token)
     {
         Logger.Log("Download Started");
         var progress = new Progress<DownloadProgress>(progressHandler);
         var res = await ytdl.RunAudioDownload(url, progress: progress, ct: token);
         Logger.Log($"Download Finished, filepath: {res.Data} [{File.Exists(res.Data)}], e: {string.Join("\n", res.ErrorOutput)}");
-        return new(res.Success, res.Data, res.ErrorOutput);
+        // return new(res.Success, res.Data, res.ErrorOutput);
+        return new(res.Success, res.Data, string.Join('\n', res.ErrorOutput));
     }
 
-    public async Task<VideoData> DownloadMetadataAsync(string url)
+    public async Task<OperationResult<VideoData>> DownloadMetadataAsync(string url)
     {
         Logger.Log($"Fetching Metadata about {url}");
         var res = await ytdl.RunVideoDataFetch(url);
         Logger.Log($"Metadata Ready, e: {string.Join("\n", res.ErrorOutput)}");
-        return res.Data;
+        return new(res.Success, res.Data, string.Join('\n', res.ErrorOutput));
     }
 }

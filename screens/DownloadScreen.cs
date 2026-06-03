@@ -9,7 +9,7 @@ sealed class DownloadScreen : PromptScreen
     public DownloadScreen(Application app) : base(app)
     {
         Title = "Download Screen";
-        AddQuestion(new Question("Paste Download Link", null, DownloadService.ValidateUrlChar));
+        AddQuestion(new Question("Paste YT url (Ctrl+Shift+v)", null, DownloadService.ValidateUrlChar));
         AddQuestion(new Question("Title", null, Library.ValidateTitleChar));
         AddQuestion(new Question("Artist", null, Library.ValidateArtistChar));
     }
@@ -18,7 +18,18 @@ sealed class DownloadScreen : PromptScreen
     {
         if (key.Key == ConsoleKey.Enter && hoveredIndex == 0)
         {
-            var data = await app.Downloader.DownloadMetadataAsync(Answer(0));
+            var notificationId = app.AddNotification(Notification.Message("Fetching metadata..."));
+            var operationResult = await app.Downloader.DownloadMetadataAsync(Answer(0));
+            app.RemoveNotification(notificationId);
+
+            if (!operationResult.Success)
+            {
+                app.AddNotification(Notification.Error("Fetching metadata failed. Try again!"));
+                return;
+            }
+            app.AddNotification(Notification.Success("Fetched successfully!", 2));
+
+            var data = operationResult.Data;
 
             Logger.Log($"Metadata: {data?.Title} - {data?.Artist}");
 
