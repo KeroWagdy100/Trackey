@@ -21,7 +21,7 @@ record DownloadResult(
 
 class DownloadService
 {
-    private YoutubeDL ytdl;
+    private YoutubeDL ytdl = null!;
 
     public static Predicate<char> ValidateUrlChar = c => char.IsLetterOrDigit(c) || ":=./?_-".Contains(c);
 

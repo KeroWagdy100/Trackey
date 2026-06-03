@@ -5,44 +5,15 @@ namespace Trackey;
 class AudioPlayer
 {
     /* Fields */
-    private readonly LibVLC _libvlc;
-    private readonly MediaPlayer _player;
+    private LibVLC _libvlc = null!;
+    private MediaPlayer _player = null!;
     private Media? _currentMedia;
 
     /* Ctors */
     public AudioPlayer()
     {
-        if (!OperatingSystem.IsWindows())
-            Core.Initialize();
-        else
-        {
-            string[] VlcPaths =
-            [
-                @"C:\Program Files\VideoLAN\VLC",
-                @"C:\Program Files (x86)\VideoLAN\VLC"
-            ];
-            foreach (string path in VlcPaths)
-            {
-                if (Directory.Exists(path))
-                {
-                    Core.Initialize(path);
-                    Logger.Log($"VLC found at '{path}'");
-                    break;
-                }
-            }
-        }
-        
-        // if (OperatingSystem.IsWindows())
-        //     Core.Initialize(@"C:\Program Files\VideoLAN\VLC");
-        // else
-
-        _libvlc = new LibVLC();
-        _player = new MediaPlayer(_libvlc);
-        _player.EndReached += (_, _) =>
-        {
-            TrackEnded?.Invoke(this, EventArgs.Empty);
-        };
     }
+
 
     /* Events */
     public event EventHandler? TrackEnded;
@@ -65,8 +36,35 @@ class AudioPlayer
     /* Methods */
     public void Init()
     {
+        if (!OperatingSystem.IsWindows())
+            Core.Initialize();
+        else
+        {
+            string[] VlcPaths =
+            [
+                @"C:\Program Files\VideoLAN\VLC",
+                @"C:\Program Files (x86)\VideoLAN\VLC"
+            ];
+            foreach (string path in VlcPaths)
+            {
+                if (Directory.Exists(path))
+                {
+                    Core.Initialize(path);
+                    Logger.Log($"VLC found at '{path}'");
+                    break;
+                }
+            }
+        }
+
+        _libvlc = new LibVLC();
+        _player = new MediaPlayer(_libvlc);
+        _player.EndReached += (_, _) =>
+        {
+            TrackEnded?.Invoke(this, EventArgs.Empty);
+        };
 
     }
+
     public void Play(string filename)
     {
         _currentMedia?.Dispose();

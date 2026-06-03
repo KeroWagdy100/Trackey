@@ -28,7 +28,7 @@ class Application
     /* Properties */
     // Services
     public Library Lib { get; } = new();
-    public AudioPlayer Player { get; private set; }
+    public AudioPlayer Player { get; private set; } = new();
     public QueueManager Queue { get; } = new();
     public UserService Users { get; } = new();
     public DownloadService Downloader { get; } = new();
@@ -94,7 +94,7 @@ class Application
 
         try
         {
-            Player = new();
+            Player.Init();
         }
         catch
         {
