@@ -12,8 +12,8 @@ static class Paths
     public static readonly string LibraryFile = Path.Combine(DataDir, "library.json");
     public static readonly string LogFile = Path.Combine(AppContext.BaseDirectory, "trackey.log");
 
-    public static readonly string YtDlpPath = Path.Combine(YtDlpDir, "yt-dlp.exe");
-    public static readonly string FfmpegPath = Path.Combine(FfmpegDir, "ffmpeg.exe");
+    public static readonly string YtDlpPath = Path.Combine(YtDlpDir, OperatingSystem.IsWindows() ? "yt-dlp.exe" : "yt-dlp");
+    public static readonly string FfmpegPath = Path.Combine(FfmpegDir, OperatingSystem.IsWindows() ? "ffmpeg.exe" : "ffmpeg");
 
 
     public static void Init()

@@ -17,6 +17,7 @@ class Application
     private Dictionary<Guid, Notification> ActiveNotifications = [];
     private Stack<Screen> BackScreens = new();
     private Stack<Screen> ForwardScreens = new();
+    private Guid? playbackWarningNotificationId = null;
 
     /* Ctors */
     public Application()
@@ -219,6 +220,9 @@ class Application
         // Removes Notifications Completed before 4 seconds or more
         foreach (var n in ActiveNotifications.Where(n => n.Value.IsExpired()))
             ActiveNotifications.Remove(n.Key);
+
+        if (playbackWarningNotificationId is Guid id && !ActiveNotifications.ContainsKey(id))
+            playbackWarningNotificationId = null;
     }
 
 
@@ -248,6 +252,12 @@ class Application
         else if (key.KeyChar == '-') Player.DecreaseVolume(5);
         else if (key.Key == ConsoleKey.Spacebar) Player.TogglePause();
         else if (key.Key == ConsoleKey.M) Player.ToggleMute();
+        else
+        {
+            if (playbackWarningNotificationId is not null)
+                RemoveNotification(playbackWarningNotificationId.Value);
+            playbackWarningNotificationId = AddNotification(Notification.Warning("press ; to lock playback controls", 2));
+        }
     }
     public bool HandleGlobalShortcuts(ConsoleKeyInfo key)
     {
