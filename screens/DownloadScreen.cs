@@ -75,7 +75,7 @@ sealed class DownloadScreen : PromptScreen
 
             string errors = string.Join("\n", q.Errors);
 
-            string prompt = Ui.Sanitize(q.Prompt);
+            string prompt = UI.Sanitize(q.Prompt);
             if (i == hoveredIndex)
                 prompt = "[yellow]" + prompt + "[/]";
             table.AddRow(new Markup(prompt), q.Input.Render());

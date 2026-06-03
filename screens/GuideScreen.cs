@@ -5,13 +5,13 @@ namespace Trackey;
 
 class GuideScreen : TableViewScreen<Shortcut>
 {
-    private int CurrentScreenShortcutsCount {get; set;}
+    private int CurrentScreenShortcutsCount { get; set; }
     public GuideScreen(Application app, IEnumerable<Shortcut> shortcuts) : base(app)
     {
         Logger.Log("Guide Screen");
         CurrentScreenShortcutsCount = shortcuts.Count();
         AddItems(shortcuts);
-        AddItems(app.GlobalShortcuts);
+        AddItems(Application.GlobalShortcuts);
     }
 
     public override void HandleInput(ConsoleKeyInfo key)
@@ -36,7 +36,7 @@ class GuideScreen : TableViewScreen<Shortcut>
             if (i == CurrentScreenShortcutsCount)
                 table.AddEmptyRow();
             for (int j = 0; j < vals.Count; ++j)
-                vals[j] = $"[white]{(j > 0 ? Ui.Sanitize(vals[j]) : vals[j])}[/]";
+                vals[j] = $"[white]{(j > 0 ? UI.Sanitize(vals[j]) : vals[j])}[/]";
 
             table.AddRow(vals.ToArray());
         }

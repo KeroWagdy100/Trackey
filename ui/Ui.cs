@@ -4,7 +4,7 @@ using Spectre.Console;
 using Spectre.Console.Rendering;
 using YoutubeDLSharp;
 
-class Ui
+class UI
 {
     public static string Ellipsis(string s, int mxWidth)
     {
@@ -24,16 +24,16 @@ class Ui
     public static string BuildProgressBar(double ratio, int width, char unfilledChar = '⎯', char filledChar = '⎯', string unfilledColor = "white", string filledColor = "green")
     {
         int filled = (int)(ratio * width);
-        string line = 
-        $"[{filledColor}]" 
-        + new string(filledChar, filled) 
-        + $"[/][{unfilledColor}]" 
+        string line =
+        $"[{filledColor}]"
+        + new string(filledChar, filled)
+        + $"[/][{unfilledColor}]"
         + new string(unfilledChar, width - filled) + "[/]";
         return line;
     }
-    
 
-// ---------------------------------------------------------------
+
+    // ---------------------------------------------------------------
 
     public Layout Layout { get; private set; }
 
@@ -44,7 +44,7 @@ class Ui
     private Panel ActivePromptPanel { get; set; }
     private Rows NotificationsRows { get; set; }
 
-    public Ui()
+    public UI()
     {
         PlaybackPanel = new("Nothing is playing")
         {
@@ -130,15 +130,15 @@ class Ui
     public void UpdatePlaybackPanel(PlaybackInfo info)
     {
         bool currentlyPlaying = info.playerState == AudioPlayer.PlayerState.PLAYING;
-        
-        string mode = new (' ', 13);
+
+        string mode = new(' ', 13);
         if (!info.PlaybackControlsUnlocked)
             mode = "[gray][[[bold];[/] to unlock]][/]";
 
         string volume = $"🔊 {info.volume,3}";
         if (info.volume == 0)
             volume = "🔇" + new string(' ', 4);
-        
+
 
         string track =
         info.playerState == AudioPlayer.PlayerState.NONE ? "Not Playing anything now"
@@ -249,7 +249,7 @@ class Ui
 
             string line = Sanitize(d.Title, 15);
 
-            line += 
+            line +=
             " " + BuildProgressBar(d.Progress.Progress, width, '░', '█', "gray", "blue")
             + " " + Math.Round(d.Progress.Progress * 100.0).ToString() + "%";
 
@@ -298,13 +298,13 @@ class Ui
         Layout["Playback"].Update(PlaybackPanel);
         Layout["Main"].Update(MainPanel);
         Layout["Queue"].Update(QueuePanel);
-        
+
         bool downloadExist = UpdateDownloadsPanel(downloads);
         if (downloadExist)
             Layout["Downloads"].Update(DownloadsPanel).Visible();
         else
             Layout["Downloads"].Invisible();
-        
+
         if (activePrompt is not null)
         {
             UpdateActivePrompt(activePrompt);
@@ -320,7 +320,7 @@ class Ui
             Layout["Notifications"]
             .Update(NotificationsRows)
             .Visible()
-            .Size(notifications.Count()+1);
+            .Size(notifications.Count() + 1);
         }
         else
             Layout["Notifications"].Invisible();

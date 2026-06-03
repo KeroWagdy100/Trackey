@@ -6,19 +6,19 @@ namespace Trackey;
 
 class InputText
 {
-    private List<char> chars = [];    
+    private List<char> chars = [];
 
-    public int CursorIndex {get; private set;} = 0;
+    public int CursorIndex { get; private set; } = 0;
     public int Length => CursorIndex;
     public string Text => new([.. chars]);
     public Predicate<char>? CharValidator;
 
     // TODO: Make these required
-    public Action<string>? OnSubmit {get; init;}
-    public Action? OnCancel {get; init;}
+    public Action<string>? OnSubmit { get; init; }
+    public Action? OnCancel { get; init; }
 
-    public bool IsActive {get; set;} = false;
-    public bool ShowCursor {get; private set;} = false;
+    public bool IsActive { get; set; } = false;
+    public bool ShowCursor { get; private set; } = false;
 
     private DateTime lastToggled = DateTime.Now;
 
@@ -30,7 +30,7 @@ class InputText
         CursorIndex = chars.Count;
     }
 
-    public void Reset() 
+    public void Reset()
     {
         chars.Clear();
         CursorIndex = 0;
@@ -51,7 +51,7 @@ class InputText
         {
             bool nonEmptyFound = false;
             int i;
-            for (i = CursorIndex-1; i >= 0; --i)
+            for (i = CursorIndex - 1; i >= 0; --i)
             {
                 if (nonEmptyFound && char.IsWhiteSpace(chars[i]))
                 {
@@ -116,7 +116,7 @@ class InputText
         string text = "";
         for (int i = 0; i < chars.Count; ++i)
         {
-            string c = Ui.Sanitize(new string(chars[i], 1));
+            string c = UI.Sanitize(new string(chars[i], 1));
 
             if (IsActive && ShowCursor && i == CursorIndex)
             {

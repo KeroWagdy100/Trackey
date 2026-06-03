@@ -5,8 +5,8 @@ namespace Trackey;
 
 class TableViewScreen<T> : Screen where T : ITableRow
 {
-    protected List<T> Items {get;} = [];
-    protected HashSet<int> SelectedIndices {get;} = [];
+    protected List<T> Items { get; } = [];
+    protected HashSet<int> SelectedIndices { get; } = [];
 
     public override int OptionsCount() => Items.Count;
     public virtual bool MultiSelect => false;
@@ -42,7 +42,7 @@ class TableViewScreen<T> : Screen where T : ITableRow
             for (int j = 0; j < vals.Count; ++j)
             {
                 string col = i == hoveredIndex ? "yellow" : "white";
-                vals[j] = $"[{col}]{(j > 0 ? Ui.Sanitize(vals[j], 30) : vals[j])}[/]";
+                vals[j] = $"[{col}]{(j > 0 ? UI.Sanitize(vals[j], 30) : vals[j])}[/]";
             }
 
             table.AddRow(vals.ToArray());
