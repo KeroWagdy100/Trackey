@@ -35,11 +35,11 @@ class LibraryViewScreen : TableViewScreen<Playlist>
             Combo = new KeyCombo(ConsoleKey.A)
         },
         new Shortcut() {
-            Description = "Add selected tracks to [Q]ueue",
+            Description = "Add selected playlists to [Q]ueue",
             Combo = new KeyCombo(ConsoleKey.Q, Shift: true)
         },
         new Shortcut() {
-            Description = "Add hovered track to [q]ueue",
+            Description = "Add hovered playlist to [q]ueue",
             Combo = new KeyCombo(ConsoleKey.Q)
         },
     ];
