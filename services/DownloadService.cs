@@ -21,16 +21,35 @@ record DownloadResult(
 
 class DownloadService
 {
-    private readonly YoutubeDL ytdl;
+    private YoutubeDL ytdl;
 
     public static Predicate<char> ValidateUrlChar = c => char.IsLetterOrDigit(c) || ":=./?_-".Contains(c);
 
-    public DownloadService()
+    public async Task Init()
     {
         ytdl = new YoutubeDL
         {
-            OutputFolder = Paths.MusicDir
+            OutputFolder = Paths.MusicDir,
         };
+
+        if (!File.Exists(Paths.YtDlpPath))
+        {
+            Logger.Log($"Downloading YTDLP..");
+            Console.WriteLine($"Downloading yt-dlp..");
+
+            await YoutubeDLSharp.Utils.DownloadYtDlp(Paths.YtDlpDir);
+        }
+
+        if (!File.Exists(Paths.FfmpegPath))
+        {
+            Logger.Log($"Downloading FFMPEG..");
+            Console.WriteLine($"Downloading ffmpeg..");
+
+            await YoutubeDLSharp.Utils.DownloadFFmpeg(Paths.FfmpegDir);
+        }
+
+        ytdl.YoutubeDLPath = Paths.YtDlpPath;
+        ytdl.FFmpegPath = Paths.FfmpegPath;
     }
 
     public async Task<OperationResult<string>> DownloadAudioAsync(string url, Action<DownloadProgress> progressHandler, CancellationToken token, string filename)

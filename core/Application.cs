@@ -9,7 +9,7 @@ namespace Trackey;
 class Application
 {
     /* Constants */
-    public const int TARGET_FPS = 30;
+    public const int TARGET_FPS = 60;
 
     /* Fields */
     private bool nextTrackRequested = false;
@@ -22,13 +22,12 @@ class Application
     public Application()
     {
         NavigateTo(new HomeScreen(this), false);
-        Player.TrackEnded += OnTrackEnded;
     }
 
     /* Properties */
     // Services
     public Library Lib { get; } = new();
-    public AudioPlayer Player { get; } = new();
+    public AudioPlayer Player { get; private set; }
     public QueueManager Queue { get; } = new();
     public UserService Users { get; } = new();
     public DownloadService Downloader { get; } = new();
@@ -89,11 +88,34 @@ class Application
         // Force the console to process UTF-8
         Console.InputEncoding = Encoding.UTF8;
         Console.OutputEncoding = Encoding.UTF8;
-
         Paths.Init();
         Logger.Clear();
 
+        try
+        {
+            Player = new();
+        }
+        catch
+        {
+            Console.WriteLine(
+                @"Trackey requires VLC Media Player.
 
+                Install VLC:
+                https://www.videolan.org/vlc/
+
+                Then restart Trackey."
+            );
+            Quit();
+        }
+
+        AddNotification(Notification.Success($"VLC Found"));
+
+        Player.TrackEnded += OnTrackEnded;
+
+        
+        Console.WriteLine("Looking for yt-dlp requirements...");
+        await Downloader.Init();
+        AddNotification(Notification.Success("Requirements found/downloaded"));
 
         var usersLoaded = await Users.LoadUsers();
         if (!usersLoaded.Success)
@@ -106,6 +128,8 @@ class Application
             AddNotification(Notification.Error(usersLoaded.ErrorMessage ?? "Failed to load users"));
         else
             AddNotification(Notification.Success("Loaded library successfully"));
+
+        Console.Clear();
     }
     public async Task FinalizeAsync()
     {
@@ -327,7 +351,7 @@ class Application
 
         if (!res.Success)
         {
-            AddNotification(Notification.Error($"Download failed: {taskInfo.ErrorMessage}"));
+            AddNotification(Notification.Error($"Download failed: {UI.Sanitize(taskInfo.ErrorMessage??"")}"));
             return;
         }
 

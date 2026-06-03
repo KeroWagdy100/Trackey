@@ -12,10 +12,29 @@ class AudioPlayer
     /* Ctors */
     public AudioPlayer()
     {
+        if (!OperatingSystem.IsWindows())
+            Core.Initialize();
+        else
+        {
+            string[] VlcPaths =
+            [
+                @"C:\Program Files\VideoLAN\VLC",
+                @"C:\Program Files (x86)\VideoLAN\VLC"
+            ];
+            foreach (string path in VlcPaths)
+            {
+                if (Directory.Exists(path))
+                {
+                    Core.Initialize(path);
+                    Logger.Log($"VLC found at '{path}'");
+                    break;
+                }
+            }
+        }
+        
         // if (OperatingSystem.IsWindows())
         //     Core.Initialize(@"C:\Program Files\VideoLAN\VLC");
         // else
-        Core.Initialize();
 
         _libvlc = new LibVLC();
         _player = new MediaPlayer(_libvlc);
