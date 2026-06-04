@@ -91,6 +91,11 @@ class AudioPlayer
     public void IncreaseVolume(int incBy) => SetVolume(Volume + incBy);
     public void DecreaseVolume(int decBy) => SetVolume(Volume - decBy);
 
+    public void MoveForward(int milliseconds)
+        => _player.Time = Math.Clamp(_player.Time + milliseconds, 0, _player.Length);
+    public void MoveBackward(int milliseconds)
+        => _player.Time = Math.Clamp(_player.Time - milliseconds, 0, _player.Length);
+
     /* Nested types */
     public enum PlayerState
     {

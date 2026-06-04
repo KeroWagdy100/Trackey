@@ -257,6 +257,10 @@ class Application
         else if (key.KeyChar == '-' || key.Key == ConsoleKey.DownArrow) Player.DecreaseVolume(5);
         else if (key.Key == ConsoleKey.Spacebar) Player.TogglePause();
         else if (key.Key == ConsoleKey.M) Player.ToggleMute();
+        else if (key.Key == ConsoleKey.RightArrow)
+            Player.MoveForward(5000);
+        else if (key.Key == ConsoleKey.LeftArrow)
+            Player.MoveBackward(5000);
         else
         {
             if (playbackWarningNotificationId is not null)
