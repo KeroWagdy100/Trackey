@@ -177,6 +177,17 @@ class Library
 
     public bool RemoveTrack(Guid trackId) => Tracks.Remove(trackId);
     public bool RemovePlaylist(Guid playlistId) => Playlists.Remove(playlistId);
+
+    public bool TryGetTrackByVideoId(string id, [NotNullWhen(true)] out Track? track)
+    {
+        track = null;
+        if (Tracks.Values.Any(t => t.VideoId == id))
+        {
+            track = Tracks.Values.First(t => t.VideoId == id);
+            return true; 
+        }
+        return false;
+    }
 }
 
 class LibraryData

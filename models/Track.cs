@@ -9,6 +9,7 @@ class Track : ITableRow
 
     public string Title { get; set; } = "";
     public string Artist { get; set; } = "";
+    public string VideoId { get; set; } = "";
     public string SourceUrl { get; set; } = "";
     public string Filepath { get; set; } = "";
 

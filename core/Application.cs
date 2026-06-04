@@ -2,6 +2,7 @@ using System.Collections.Specialized;
 using System.Text;
 using LibVLCSharp.Shared;
 using Spectre.Console;
+using YoutubeDLSharp;
 using YoutubeDLSharp.Metadata;
 
 namespace Trackey;

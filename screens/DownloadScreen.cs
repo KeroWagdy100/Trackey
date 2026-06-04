@@ -1,6 +1,7 @@
 using System.Data.Common;
 using Spectre.Console;
 using Spectre.Console.Rendering;
+using YoutubeDLSharp.Metadata;
 
 namespace Trackey;
 
@@ -22,14 +23,20 @@ sealed class DownloadScreen : PromptScreen
             var operationResult = await app.Downloader.DownloadMetadataAsync(Answer(0));
             app.RemoveNotification(notificationId);
 
-            if (!operationResult.Success)
+            if (!operationResult.Success || operationResult.Data is null)
             {
                 app.AddNotification(Notification.Error("Fetching metadata failed. Try again!"));
                 return;
             }
             app.AddNotification(Notification.Success("Fetched successfully!", 2));
 
-            var data = operationResult.Data;
+            VideoData data = operationResult.Data;
+
+            if (app.Lib.TryGetTrackByVideoId(data.ID, out Track? track))
+            {
+                app.AddNotification(Notification.Warning($"Track already exists! Title: {track.Title}"));
+                return;
+            }
 
             Logger.Log($"Metadata: {data?.Title} - {data?.Artist}");
 
