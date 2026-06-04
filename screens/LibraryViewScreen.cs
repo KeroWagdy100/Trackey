@@ -46,8 +46,11 @@ class LibraryViewScreen : TableViewScreen<Playlist>
 
     public override void HandleInput(ConsoleKeyInfo key)
     {
+        if (IsSearching && SearchInputActive)
+            base.HandleInput(key);
+
         // Create [N]ew playlist
-        if (key.Key == ConsoleKey.N)
+        else if (key.Key == ConsoleKey.N)
         {
             Logger.Log("Creating playlist");
             app.SetActivePrompt(new Prompt() {
@@ -118,7 +121,8 @@ class LibraryViewScreen : TableViewScreen<Playlist>
             app.NavigateTo(new TrackListScreen(app, Items[hoveredIndex].Id), true);
         }
 
-        base.HandleInput(key);
+        else
+            base.HandleInput(key);
     }
 
 }

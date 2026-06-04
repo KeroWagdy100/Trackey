@@ -91,6 +91,7 @@ class UI
 
         Layout["MainWindow"].SplitRows(
             new Layout("Main"),
+            new Layout("MainFooter").Size(1),
             new Layout("Notifications").Size(3),
             new Layout("ActivePrompt").Size(3),
             new Layout("Downloads").Size(4)
@@ -197,6 +198,11 @@ class UI
             Header = new(currentScreen.Title, Justify.Center),
             Expand = true
         }.NoBorder();
+
+        if (currentScreen.Footer() is IRenderable footer)
+            Layout["MainFooter"].Update(footer).Visible();
+        else
+            Layout["MainFooter"].Invisible();
     }
 
     public void UpdateQueuePanel(IEnumerable<QueueItem> queueItems)
@@ -324,6 +330,7 @@ class UI
         }
         else
             Layout["Notifications"].Invisible();
+        
     }
 
 }

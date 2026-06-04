@@ -62,6 +62,10 @@ class Application
             Combo = new KeyCombo(ConsoleKey.Q, Ctrl: true)
         },
         new Shortcut() {
+            Description = "Search current screen (not available for all screens)",
+            Combo = new KeyCombo(ConsoleKey.Oem6, Char: '/')
+        },
+        new Shortcut() {
             Description = "Play next track in queue",
             Combo = new KeyCombo(ConsoleKey.Oem6, Shift: true, Char: '}')
         },
@@ -248,8 +252,8 @@ class Application
     }
     public void HandlePlaybackShortcuts(ConsoleKeyInfo key)
     {
-        if (key.KeyChar == '+') Player.IncreaseVolume(5);
-        else if (key.KeyChar == '-') Player.DecreaseVolume(5);
+        if (key.KeyChar == '+' || key.Key == ConsoleKey.UpArrow) Player.IncreaseVolume(5);
+        else if (key.KeyChar == '-' || key.Key == ConsoleKey.DownArrow) Player.DecreaseVolume(5);
         else if (key.Key == ConsoleKey.Spacebar) Player.TogglePause();
         else if (key.Key == ConsoleKey.M) Player.ToggleMute();
         else

@@ -11,4 +11,9 @@ class Shortcut: ITableRow
     public List<string> Cells() => [Combo.ToString(), Description];
 
     public bool IsMatching(ConsoleKeyInfo keyInfo) => Combo.IsMatching(keyInfo);
+
+    public bool Search(string text)
+    {
+        return Description.Contains(text);
+    }
 }

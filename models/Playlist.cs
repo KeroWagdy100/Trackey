@@ -28,5 +28,10 @@ class Playlist : ITableRow
         return [Title, TrackIds.Count.ToString(), CreatedAt.ToString()];
     }
 
+    public bool Search(string text)
+    {
+        return Title.Contains(text);
+    }
+
     public bool RemoveTrack(Guid id) => TrackIds.Remove(id);
 }

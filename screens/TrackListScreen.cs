@@ -48,6 +48,11 @@ class TrackListScreen : TableViewScreen<Track>
 
     public override void HandleInput(ConsoleKeyInfo key)
     {
+        if (IsSearching && SearchInputActive)
+        {
+            base.HandleInput(key);
+            return;
+        }
         bool shift = key.Modifiers.HasFlag(ConsoleModifiers.Shift);
         if (key.Key == ConsoleKey.Enter && OnSubmit is not null)
         {

@@ -40,4 +40,5 @@ abstract class Screen
     public bool CapturesTextInput { get; protected set; } = false;
     public virtual string Title {get; set;} = "";
     public virtual IEnumerable<Shortcut> Shortcuts => [];
+    public virtual IRenderable? Footer() => null;
 }

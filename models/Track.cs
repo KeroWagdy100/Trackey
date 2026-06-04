@@ -17,6 +17,10 @@ class Track : ITableRow
 
     public static List<string> Headers() => ["Title", "Artist"];
     public List<string> Cells() => [Title, Artist];
+    public bool Search(string text)
+    {
+        return Title.Contains(text)  || Artist.Contains(text);
+    }
 
     // TODO: Add track duration
 }
