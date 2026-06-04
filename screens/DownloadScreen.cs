@@ -7,6 +7,8 @@ namespace Trackey;
 
 sealed class DownloadScreen : PromptScreen
 {
+    private string? currentVideoId = null;
+
     public DownloadScreen(Application app) : base(app)
     {
         Title = "Download Screen";
@@ -32,10 +34,11 @@ sealed class DownloadScreen : PromptScreen
 
             VideoData data = operationResult.Data;
 
-            if (app.Lib.TryGetTrackByVideoId(data.ID, out Track? track))
+            currentVideoId = data.ID;
+            if (app.Lib.TryGetTrackByVideoId(currentVideoId, out Track? track))
                 app.AddNotification(Notification.Warning($"Track already exists! Title: {track.Title}"));
 
-            Logger.Log($"Metadata: {data.Title} - {data.Artist}");
+            Logger.Log($"Metadata: {data.Title} - {data.Artist} - [{data.ID}]");
 
             string title = string.IsNullOrEmpty(data.Title) ?
             "N/A" :
@@ -59,7 +62,7 @@ sealed class DownloadScreen : PromptScreen
         string url = Answer(0);
         string title = Answer(1);
         string artist = Answer(2);
-        _ = app.AddDownload(url, title, artist);
+        _ = app.AddDownload(url, currentVideoId ?? "N/A", title, artist);
         app.NavigateBack(false);
     }
 

@@ -342,7 +342,7 @@ class Application
     }
 
     // Download Service
-    public async Task AddDownload(string url, string title, string artist)
+    public async Task AddDownload(string url, string videoId, string title, string artist)
     {
         var taskInfo = new DownloadTaskInfo()
         {
@@ -381,6 +381,7 @@ class Application
             Title = taskInfo.Title,
             Artist = taskInfo.Artist,
             SourceUrl = taskInfo.Url,
+            VideoId = videoId,
             Filepath = taskInfo.FilePath!,
             DownloadedAt = taskInfo.CompletedAt.Value
         };
