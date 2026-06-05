@@ -44,8 +44,19 @@ class UI
     private Panel ActivePromptPanel { get; set; }
     private Rows NotificationsRows { get; set; }
 
-    public UI()
+    private IEnumerable<QueueItem> _queueItems = [];
+    private Library _library;
+
+    public void OnQueueChanged(IEnumerable<QueueItem> queueItems)
     {
+        _queueItems = queueItems;
+    }
+
+    public UI(QueueManager queueManager, Library library)
+    {
+        queueManager.QueueChanged += OnQueueChanged;
+        _library = library;
+
         PlaybackPanel = new("Nothing is playing")
         {
             Header = new PanelHeader($"Trackey", Justify.Center),
@@ -205,11 +216,12 @@ class UI
             Layout["MainFooter"].Invisible();
     }
 
-    public void UpdateQueuePanel(IEnumerable<QueueItem> queueItems)
+    public void UpdateQueuePanel()
     {
+
         QueueItem? lastPrev = null;
         List<QueueItem> visible = [];
-        foreach (var item in queueItems)
+        foreach (var item in _queueItems)
         {
             if (item.Type == QueueItemType.PREVIOUS) lastPrev = item;
             else visible.Add(item);
@@ -223,13 +235,16 @@ class UI
 
         foreach (var item in visible)
         {
+            if (!_library.TryGetTrack(item.TrackId, out Track? track))
+                continue;
+
             string color = "white";
             if (item.Type == QueueItemType.PREVIOUS)
                 color = "gray";
             else if (item.Type == QueueItemType.CURRENT)
                 color = "green";
 
-            string title = Sanitize(item.Track.Title, 30);
+            string title = Sanitize(track.Title, 30);
 
             string text = $"[{color}]{(item.Type == QueueItemType.CURRENT ? "⇨ " : "")}{title}[/]\n";
             markups.Add(new Markup(text).Crop());
@@ -292,7 +307,7 @@ class UI
     public void Update(
         Screen currentScreen,
         PlaybackInfo playbackInfo,
-        IEnumerable<QueueItem> queueTracks,
+        // IEnumerable<QueueItem> queueTracks,
         List<DownloadTaskInfo> downloads,
         Prompt? activePrompt,
         IEnumerable<Notification> notifications
@@ -300,7 +315,7 @@ class UI
     {
         UpdatePlaybackPanel(playbackInfo);
         UpdateMainPanel(currentScreen);
-        UpdateQueuePanel(queueTracks);
+        UpdateQueuePanel();
         Layout["Playback"].Update(PlaybackPanel);
         Layout["Main"].Update(MainPanel);
         Layout["Queue"].Update(QueuePanel);

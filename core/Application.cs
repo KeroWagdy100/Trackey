@@ -23,6 +23,7 @@ class Application
     /* Ctors */
     public Application()
     {
+        Ui = new UI(Queue, Lib);
         NavigateTo(new HomeScreen(this), false);
     }
 
@@ -52,7 +53,7 @@ class Application
 
 
     // Ui
-    private UI Ui { get; } = new();
+    private UI Ui { get; set;} = null!;
     public Screen CurrentScreen { get; set; } = null!;
     public Prompt? ActivePrompt { get; set; } = null;
     public bool PlaybackControlsUnlocked { get; set; } = false;
@@ -180,8 +181,8 @@ class Application
     {
         if (!TrackExists && !Queue.IsEmpty)
             OnTrackEnded(null, new());
-        UpdateQueue();
 
+        UpdateQueue();
         UpdateActiveDownloads();
         UpdateNotifications();
 
@@ -195,7 +196,7 @@ class Application
                 Player.TimeMs,
                 Player.DurationMs
                 ),
-            GetQueueItems(),
+            // GetQueueItems(),
             ActiveDownloads,
             ActivePrompt,
             ActiveNotifications.Values
@@ -213,6 +214,7 @@ class Application
     }
     public void UpdateActiveDownloads()
     {
+        if (ActiveDownloads.Count == 0) return;
         // Removes Active Downloads Completed before 4 seconds or more
         var now = DateTime.Now;
         ActiveDownloads.RemoveAll(
@@ -222,7 +224,7 @@ class Application
     }
     public void UpdateNotifications()
     {
-        // Removes Notifications Completed before 4 seconds or more
+        // Removes Expired Notifications
         foreach (var n in ActiveNotifications.Where(n => n.Value.IsExpired()))
             ActiveNotifications.Remove(n.Key);
 
@@ -331,15 +333,15 @@ class Application
 
     // Queue Service
     // Returns the corresponding Track for each trackId from Queue.QueueItems
-    public IEnumerable<QueueItem> GetQueueItems()
-    {
-        var items = Queue.QueueItems();
-        foreach (var item in items)
-        {
-            if (Lib.TryGetTrack(item.Track.Id, out Track? track))
-                yield return new QueueItem(track, item.Type);
-        }
-    }
+    // public IEnumerable<QueueItem> GetQueueItems()
+    // {
+    //     var items = Queue.QueueItems();
+    //     foreach (var item in items)
+    //     {
+    //         if (Lib.TryGetTrack(item.Track.Id, out Track? track))
+    //             yield return new QueueItem(track, item.Type);
+    //     }
+    // }
 
     // Download Service
     public async Task AddDownload(string url, string videoId, string title, string artist)
